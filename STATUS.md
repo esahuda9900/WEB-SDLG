@@ -2,27 +2,27 @@
 Terakhir diperbarui: 2026-10-24 oleh agent
 
 ## Posisi sekarang
-- Milestone aktif: **M8 — Arsip klaim**
-- Yang sedang dikerjakan: Panel arsip di branch `feature/m8-arsip`
+- Milestone aktif: **M8 — Arsip klaim** (deploy sukses, menunggu tes pemilik)
+- Yang sedang dikerjakan: Menunggu tes arsip di production.
 
 ## Catatan Estafet
-- Sedang mengerjakan: M8
+- Sedang mengerjakan: M8 — tes
 - Sudah sampai mana:
-  - M7 Klaim baru OK pemilik
-  - Arsipkan / batalkan arsip (set archived_at)
-  - Belum PR/merge
-- File / branch: feature/m8-arsip
-- Langkah berikutnya: PR → merge → deploy → pemilik tes arsip
+  - PR #8 di-merge (squash)
+  - Deploy Pages **sukses** (run #19)
+  - Arsip / batalkan arsip live
+- File / branch: main
+- Langkah berikutnya: Pemilik tes arsip → OK → M9 export CSV (opsional) atau stabilisasi
 
 ## Sudah selesai dan dites pemilik
 - M1, M5, M6, M7
 
 ## Sudah dibuat, belum dites pemilik
-- M2–M4, M8 (branch)
+- M2–M4, M8 arsip
 
 ## Langkah berikutnya
-1. PR M8 → merge → deploy
-2. Tes arsip pada klaim Draft uji coba
+1. Tes arsip pada klaim Draft uji coba
+2. Setelah OK → export daftar atau polish UX
 
 ## Commit stabil terakhir
-- 16f956f — STATUS M7 menunggu tes
+- 7a4ada0 — M8 merge
