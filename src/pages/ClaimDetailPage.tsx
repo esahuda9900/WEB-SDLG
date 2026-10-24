@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { toDisplayStatus } from '../lib/claimStatus'
@@ -91,7 +91,7 @@ function fmtMoney(n: number | null | undefined, currency: string | null) {
   return `${cur} ${Number(n).toLocaleString('id-ID', { maximumFractionDigits: 2 })}`
 }
 
-function Field({ label, value }: { label: string; value: React.ReactNode }) {
+function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="detail-field">
       <div className="detail-label">{label}</div>
@@ -100,7 +100,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
-function Block({ title, children }: { title: string; children: React.ReactNode }) {
+function Block({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="card detail-block">
       <h2 className="detail-block-title">{title}</h2>
