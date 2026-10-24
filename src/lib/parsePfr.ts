@@ -70,145 +70,213 @@ function num(v: unknown): number | null {
 }
 
 const MONTHS: Record<string, number> = {
-  jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
-  jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
+  jan: 1, january: 1, feb: 2, february: 2, mar: 3, march: 3, apr: 4, april: 4,
+  may: 5, jun: 6, june: 6, jul: 7, july: 7, aug: 8, august: 8,
+  sep: 9, sept: 9, september: 9, oct: 10, october: 10, nov: 11, november: 11,
+  dec: 12, december: 12,
 }
 
-function dateIso(v: unknown): string | null {
+/** Selalu kembalikan YYYY-MM-DD atau null (aman untuk input type=date). */
+export function dateIso(v: unknown): string | null {
   const s = clean(v)
   if (!s) return null
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s
+
   let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/)
   if (m) {
     let y = m[3]
     if (y.length === 2) y = '20' + y
-    const out = `${y}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`
-    const dt = new Date(`${out}T00:00:00Z`)
-    return dt.getUTCFullYear() === Number(y) &&
-      dt.getUTCMonth() + 1 === Number(m[2]) &&
-      dt.getUTCDate() === Number(m[1])
-      ? out
-      : null
+    const dd = m[1].padStart(2, '0')
+    const mm = m[2].padStart(2, '0')
+    return `${y}-${mm}-${dd}`
   }
-  m = s.match(/^(\d{1,2})[\-\s]+([A-Za-z]{3,9})[\-\s]+(\d{4})$/)
+
+  m = s.match(/^(\d{1,2})[\-\s\/]+([A-Za-z]{3,9})[\-\s\/]+(\d{2,4})$/)
   if (m) {
-    const mm = MONTHS[m[2].slice(0, 3).toLowerCase()]
+    const mm = MONTHS[m[2].toLowerCase()]
     if (!mm) return null
-    const out = `${m[3]}-${String(mm).padStart(2, '0')}-${m[1].padStart(2, '0')}`
-    return out
+    let y = m[3]
+    if (y.length === 2) y = '20' + y
+    return `${y}-${String(mm).padStart(2, '0')}-${m[1].padStart(2, '0')}`
+  }
+
+  m = s.match(/^([A-Za-z]{3,9})[\-\s\/]+(\d{1,2})[\-\s\/]+(\d{2,4})$/)
+  if (m) {
+    const mm = MONTHS[m[1].toLowerCase()]
+    if (!mm) return null
+    let y = m[3]
+    if (y.length === 2) y = '20' + y
+    return `${y}-${String(mm).padStart(2, '0')}-${m[2].padStart(2, '0')}`
+  }
+
+  return null
+}
+
+/** Samakan pemisah: tab & spasi ganda → tab. */
+function normalizeRaw(rawText: string): string {
+  return rawText
+    .replace(/\u00a0/g, ' ')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/\t+/g, '\t')
+    .replace(/ {2,}/g, '\t')
+}
+
+function normKey(s: string) {
+  return clean(s)
+    .toLowerCase()
+    .replace(/[.:"']/g, '')
+    .replace(/\s+/g, ' ')
+}
+
+/**
+ * Bangun pasangan label → nilai dari sel-sel berurutan.
+ * Cocok untuk paste Excel (tab) maupun spasi ganda.
+ */
+function buildPairs(rawText: string): { key: string; value: string }[] {
+  const raw = normalizeRaw(rawText)
+  const pairs: { key: string; value: string }[] = []
+  const lines = raw.split('\n')
+
+  for (const line of lines) {
+    const cells = line.split('\t').map(clean).filter((c, i, arr) => c || arr.length > 1)
+    for (let i = 0; i < cells.length; i++) {
+      const cell = cells[i]
+      if (!cell) continue
+      // "Label: value" dalam satu sel
+      const inline = cell.match(/^(.{3,60}?)\s*:\s*(.+)$/)
+      if (inline && !/https?:/i.test(cell)) {
+        pairs.push({ key: normKey(inline[1]), value: clean(inline[2]) })
+      }
+      // Label di sel ini, nilai di sel berikutnya
+      const next = cells[i + 1]
+      if (next && next.length > 0 && cell.length >= 3 && cell.length <= 80) {
+        pairs.push({ key: normKey(cell), value: next })
+      }
+    }
+  }
+  return pairs
+}
+
+function findPair(pairs: { key: string; value: string }[], labels: string[]): string | null {
+  const wants = labels.map(normKey)
+  for (const { key, value } of pairs) {
+    for (const w of wants) {
+      if (key === w || key.startsWith(w + ' ') || key.endsWith(' ' + w) || key.includes(w)) {
+        // Hindari match terlalu longgar untuk key pendek
+        if (w.length < 6 && key !== w && !key.startsWith(w)) continue
+        const v = clean(value)
+        if (!v) continue
+        if (/^(signature|date)$/i.test(v)) continue
+        return v
+      }
+    }
   }
   return null
 }
 
-/** Ambil nilai setelah label (tab, spasi, atau baris berikutnya). */
-function afterLabel(raw: string, labels: string[]): string | null {
-  for (const label of labels) {
-    const esc = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    // Label lalu tab/spasi lalu nilai di baris yang sama
-    let re = new RegExp(esc + '\\s*[:]?\\s*[\t ]+([^\n\r\t]+)', 'i')
-    let m = raw.match(re)
-    if (m) {
-      const v = clean(m[1])
-      if (v && !/^(Signature|Date|Customer)\b/i.test(v)) return v
-    }
-    // Label di akhir sel, nilai di token berikutnya (banyak spasi)
-    re = new RegExp(esc + '\\s*[:]?\\s+([^\n\r]{1,120})', 'i')
-    m = raw.match(re)
-    if (m) {
-      const v = clean(m[1].split(/\t{2,}|\s{2,}/)[0])
-      if (v && v.length < 120) return v
-    }
-  }
-  return null
+function findRegex(raw: string, re: RegExp): string | null {
+  const m = raw.match(re)
+  return m ? clean(m[1]) : null
 }
 
-function blockAfter(raw: string, labels: string[], stopLabels: string[]): string | null {
-  for (const label of labels) {
-    const esc = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const re = new RegExp(esc + '\\s*[:]?\\s*["\s]*([\\s\\S]{1,2000}?)(?=' +
-      stopLabels.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') +
-      '|$)', 'i')
-    const m = raw.match(re)
-    if (m) {
-      const v = clean(m[1].replace(/"/g, ' '))
-      if (v.length > 3) return v
-    }
-  }
-  return null
-}
-
-/** Parse lokal tangguh — tidak hanya mengandalkan tab Excel. */
 export function parsePfrLocal(rawText: string): ParsedPfr {
-  const raw = rawText.replace(/\u00a0/g, ' ')
+  const raw = normalizeRaw(rawText)
+  const pairs = buildPairs(rawText)
   const p: ParsedPfr = {}
 
-  p.distributorNo = afterLabel(raw, ['Distributor No'])
-  p.sdlgNo = afterLabel(raw, ['SDLG No'])
-  p.dealerWoSo = afterLabel(raw, ['Dealer WO/SO', 'Dealer WO'])
-  p.appCode = afterLabel(raw, ['App. Code', 'App Code'])
-  p.model = afterLabel(raw, ['Product Name (Model)'])
-  p.hmFailure = num(afterLabel(raw, ['Working Hours (Hour Meter Reading)', 'Working Hours']))
-  p.distributor = afterLabel(raw, ['Distributor'])
-  p.indentNo = afterLabel(raw, [
-    'Indent No. (Machine Build No.)',
-    'Indent No (Machine Build No)',
-    'Indent No.',
-  ])
-  p.salesDate = dateIso(afterLabel(raw, ['Sales Date (DD/MM/YY)', 'Sales Date']))
-  p.customer = afterLabel(raw, ['Customer Name'])
-  p.serialNo = afterLabel(raw, ['Serial No.', 'Serial No'])
-  p.failureDate = dateIso(afterLabel(raw, ['Failure Date']))
-  p.dealerName = afterLabel(raw, ['Contact Info (Dealer Name)', 'Dealer Name'])
-  p.dealerCode = afterLabel(raw, ['Dealer Code'])
-  p.dealerClaimNo = afterLabel(raw, ['Dealer Claim No.', 'Dealer Claim No'])
-  p.dealerRepairDate = dateIso(
-    afterLabel(raw, ['Dealer  Repair Date', 'Dealer Repair Date']),
+  const g = (...labels: string[]) => findPair(pairs, labels)
+
+  p.distributorNo = g('Distributor No') || findRegex(raw, /Distributor No[:\s\t]+(\S+)/i)
+  p.sdlgNo = g('SDLG No')
+  p.dealerWoSo = g('Dealer WO/SO', 'Dealer WO') || findRegex(raw, /Dealer WO\/?SO[\s\t]+(\S+)/i)
+  p.appCode = g('App Code', 'App. Code')
+  p.model = g('Product Name (Model)', 'Product Name') ||
+    findRegex(raw, /Product Name \(Model\)[\s\t]+([^\t\n]+)/i)
+  p.hmFailure = num(
+    g('Working Hours (Hour Meter Reading)', 'Working Hours', 'Hour Meter Reading') ||
+      findRegex(raw, /Working Hours \(Hour Meter Reading\)[\s\t]+([0-9.,]+)/i),
   )
-  p.dealerClaimDate = dateIso(afterLabel(raw, ['Dealer  Claim Date', 'Dealer Claim Date']))
-  p.faultDescription = afterLabel(raw, ['Fault Description'])
-  p.causeAnalyze = blockAfter(
-    raw,
-    ['Cause Analyze (Cause of Failure)', 'Cause Analyze'],
-    ['Comment', 'Causing Part Number', 'Handling Result'],
+  p.distributor = g('Distributor')
+  // Distributor kadang ketuker dengan "PT. ..." setelah label Distributor di baris model
+  if (p.distributor && /SDLG|Working|Hour/i.test(p.distributor)) {
+    p.distributor =
+      findRegex(raw, /Distributor[\s\t]+(PT\.?[^\t\n]+)/i) || p.distributor
+  }
+  p.indentNo =
+    g('Indent No (Machine Build No)', 'Indent No. (Machine Build No.)', 'Indent No') ||
+    findRegex(raw, /Indent No[^	\n]{0,40}?[\s\t]+([A-Z0-9]+)/i)
+  p.salesDate = dateIso(g('Sales Date (DD/MM/YY)', 'Sales Date'))
+  p.customer = g('Customer Name') || findRegex(raw, /Customer Name[\s\t]+([^\t\n]+)/i)
+  p.serialNo = g('Serial No', 'Serial No.') || findRegex(raw, /Serial No\.?[\s\t]+([A-Z0-9]+)/i)
+  p.failureDate = dateIso(g('Failure Date'))
+  p.dealerName =
+    g('Contact Info (Dealer Name)', 'Dealer Name') ||
+    findRegex(raw, /Contact Info \(Dealer Name\)[\s\t]+([^\t\n]+)/i)
+  p.dealerCode = g('Dealer Code')
+  p.dealerClaimNo = g('Dealer Claim No', 'Dealer Claim No.')
+  p.dealerRepairDate = dateIso(g('Dealer Repair Date', 'Dealer  Repair Date'))
+  p.dealerClaimDate = dateIso(g('Dealer Claim Date', 'Dealer  Claim Date'))
+  p.faultDescription =
+    g('Fault Description') || findRegex(raw, /Fault Description[\s\t]+([^\t\n]+)/i)
+
+  // Blok teks panjang
+  const cause = raw.match(
+    /Cause Analyze[^
+]{0,40}?[\s\t"']+([\s\S]{10,800}?)(?=Comment|Causing Part|Handling Result)/i,
   )
-  p.comment = blockAfter(raw, ['Comment'], ['Causing Part Number', 'Handling Result'])
-  const cp = afterLabel(raw, ['Causing Part Number (Description)', 'Causing Part Number'])
+  if (cause) p.causeAnalyze = clean(cause[1].replace(/"/g, ' '))
+  const comment = raw.match(
+    /Comment[\s\t"']+([\s\S]{5,600}?)(?=Causing Part|Handling Result)/i,
+  )
+  if (comment) p.comment = clean(comment[1].replace(/"/g, ' '))
+  const method = raw.match(
+    /Handling Result[^
+]{0,40}?[\s\t"']+([\s\S]{5,400}?)(?=Customer|Signature|Part Replacement)/i,
+  )
+  if (method) p.repairMethod = clean(method[1].replace(/"/g, ' '))
+
+  const cp =
+    g('Causing Part Number (Description)', 'Causing Part Number') ||
+    findRegex(raw, /Causing Part Number[^
+]{0,20}?[\s\t]+([^\t\n]+)/i)
   if (cp) {
     const m = cp.match(/^(\S+)\s*\((.+)\)\s*$/)
     if (m) {
       p.causingPartNo = m[1]
       p.causingPartDesc = m[2]
-    } else p.causingPartNo = cp
+    } else {
+      p.causingPartNo = clean(cp.split(/\s{2,}/)[0])
+      const dm = cp.match(/\(([^)]+)\)/)
+      if (dm) p.causingPartDesc = clean(dm[1])
+    }
   }
-  p.repairMethod = blockAfter(
-    raw,
-    ['Handling Result (Repair Method)', 'Handling Result'],
-    ['Customer', 'Signature', 'Part Replacement', 'Repairs Completion'],
-  )
-  p.technicalPersonnel = afterLabel(raw, [
-    'Signature of Technical Personnel:',
-    'Signature of Technical Personnel',
-    'Technical Personnel',
-  ])
+
+  p.technicalPersonnel =
+    g('Signature of Technical Personnel', 'Technical Personnel') ||
+    findRegex(raw, /Signature of Technical Personnel:?[\s\t]+([^\t\n]+)/i)
   p.completionDate = dateIso(
-    afterLabel(raw, ['Repairs Completion Date:', 'Repairs Completion Date']),
+    g('Repairs Completion Date', 'Repairs Completion Date:') ||
+      findRegex(raw, /Repairs Completion Date:?[\s\t]+([^\t\n]+)/i),
   )
 
   const fin = raw.match(/Finish Hour Meter\s*\(([^)]+)\)/i)
   if (fin) p.hmCompletion = num(fin[1])
-  const eng = raw.match(/Engine Name Plate\s*\((?:SN\.?\s*)?([^)]+)\)/i)
+  const eng = raw.match(
+    /(?:Engine Name Plate|Serial Number Engine)\s*\((?:SN\.?\s*)?([^)]+)\)/i,
+  )
   if (eng) p.engineSerialNo = clean(eng[1])
   const floc = raw.match(/Failure Part Location\s*\(([^)]+)\)/i)
   if (floc) p.failurePartLocation = clean(floc[1])
-  const mts = raw.match(/Mil(?:e|l)age To Site\s*=\s*([0-9.,]+)/i)
+  const mts = raw.match(/Mil+(?:e|a)ge\s+to\s+(?:Site|Location)\s*=\s*([0-9.,]+)/i)
   if (mts) {
     p.mileageToSite = num(mts[1])
     p.mileageKm = p.mileageToSite
   }
 
-  // Labour hrs: angka setelah "Labour" ... "Hrs"
-  const lab = raw.match(/Labour[\s\S]{0,80}?Hrs[\s\t]*([0-9]+(?:[.,][0-9]+)?)/i)
+  const lab = raw.match(/Labour[\s\S]{0,100}?Hrs[\s\t]*([0-9]+(?:[.,][0-9]+)?)/i)
   if (lab) p.labourHrs = num(lab[1])
-  const mil = raw.match(/Mileage[\s\S]{0,80}?Km[\s\t]*([0-9]+(?:[.,][0-9]+)?)/i)
+  const mil = raw.match(/Mileage[\s\S]{0,100}?Km[\s\t]*([0-9]+(?:[.,][0-9]+)?)/i)
   if (mil) p.mileageKm = num(mil[1])
 
   if (/\bUSD\b/i.test(raw)) p.currency = 'USD'
@@ -221,58 +289,63 @@ export function parsePfrLocal(rawText: string): ParsedPfr {
 }
 
 function parsePartsLocal(raw: string): Record<string, unknown>[] {
-  const lines = raw.split(/\r?\n/)
+  const lines = normalizeRaw(raw).split('\n')
   const out: Record<string, unknown>[] = []
-  // Baris part: dua kode SLG-... lalu deskripsi lalu qty
-  const partLine =
-    /\b(SLG[-\s]?[0-9A-Z]+)\b[\s\t]+\b(SLG[-\s]?[0-9A-Z]+)\b[\s\t]+([^\t\n]+?)[\s\t]+([0-9]+(?:[.,][0-9]+)?)[\s\t]+([0-9.,]*)[\s\t]*([0-9.,]*)/i
-  const partLineLoose =
-    /\b(SLG[-\s]?[0-9A-Z]+)\b[\s\t]+\b(SLG[-\s]?[0-9A-Z]+)\b[\s\t]+([A-Za-z][^\t\n]{1,60}?)[\s\t]+([0-9]+)/i
+  let inParts = false
 
   for (const line of lines) {
-    if (/PARTS TOTAL|Copy last row/i.test(line)) break
-    let m = line.match(partLine)
-    if (!m) m = line.match(partLineLoose)
-    if (!m) continue
-    const failure = clean(m[1]).replace(/\s+/g, '')
-    const replacement = clean(m[2]).replace(/\s+/g, '')
-    const description = clean(m[3])
-    const qty = num(m[4])
-    const unitPrice = m[5] != null ? num(m[5]) : null
-    const amount = m[6] != null ? num(m[6]) : unitPrice != null && qty != null ? qty * unitPrice : null
-    if (!failure && !replacement) continue
+    if (/Part Replacement Record/i.test(line)) {
+      inParts = true
+      continue
+    }
+    if (/PARTS TOTAL|\*Copy last row/i.test(line)) break
+    if (!inParts && !/SLG[-]?\d/i.test(line)) continue
+
+    // Sel: failure, replacement, desc, qty, price, amount
+    const cells = line.split('\t').map(clean).filter(Boolean)
+    const codes = cells.filter((c) => /^SLG[-]?\d+/i.test(c))
+    if (codes.length === 0) continue
+
+    let description: string | null = null
+    let qty: number | null = null
+    let unitPrice: number | null = null
+    let amount: number | null = null
+
+    for (const c of cells) {
+      if (/^SLG[-]?\d+/i.test(c)) continue
+      if (/^(Failure|Replacement|Description|Quantity|Unit|Amount)/i.test(c)) continue
+      if (/^[A-Za-z][A-Za-z\s\-]{2,40}$/.test(c) && !description) {
+        description = c
+        continue
+      }
+      const n = num(c)
+      if (n == null) continue
+      if (qty == null && n <= 100 && Number.isInteger(n)) {
+        qty = n
+        continue
+      }
+      if (unitPrice == null) {
+        unitPrice = n
+        continue
+      }
+      if (amount == null) amount = n
+    }
+
+    const failure = codes[0].replace(/\s+/g, '')
+    const replacement = (codes[1] || codes[0]).replace(/\s+/g, '')
+    if (qty == null) qty = 1
+    if (amount == null && unitPrice != null && qty != null) amount = qty * unitPrice
+
     out.push({
       failurePartNo: failure,
       replacementPartNo: replacement,
-      description: /^(Sealing|O-Ring|Plate|AC |Kit|Pump)/i.test(description)
-        ? description
-        : description,
+      description,
       qty,
       unitPrice,
       amount,
     })
   }
 
-  // Fallback: daftar SLG di bagian Part Replacement
-  if (out.length === 0) {
-    const section = raw.split(/Part Replacement Record/i)[1] || ''
-    const codes = [...section.matchAll(/\b(SLG[-]?[0-9A-Z]+)\b/gi)].map((x) =>
-      x[1].replace(/\s+/g, ''),
-    )
-    // Pasangkan berdua (failure, replacement) unik
-    for (let i = 0; i + 1 < codes.length && out.length < 20; i += 2) {
-      if (codes[i] === codes[i + 1] || true) {
-        out.push({
-          failurePartNo: codes[i],
-          replacementPartNo: codes[i + 1] || codes[i],
-          description: null,
-          qty: 1,
-          unitPrice: null,
-          amount: null,
-        })
-      }
-    }
-  }
   return out
 }
 
@@ -284,27 +357,13 @@ function mergeParsed(a: ParsedPfr, b: ParsedPfr): ParsedPfr {
     const cur = out[k]
     if (cur === null || cur === undefined || cur === '') {
       ;(out as Record<string, unknown>)[k] = v
-    } else if (Array.isArray(v) && Array.isArray(cur) && cur.length === 0) {
-      ;(out as Record<string, unknown>)[k] = v
     }
   }
-  // Parts: pilih yang lebih lengkap
-  const ap = Array.isArray(a.parts) ? a.parts : []
-  const bp = Array.isArray(b.parts) ? b.parts : []
+  const ap = Array.isArray(a.parts) ? (a.parts as unknown[]) : []
+  const bp = Array.isArray(b.parts) ? (b.parts as unknown[]) : []
   if (bp.length > ap.length) out.parts = bp
-  else if (ap.length && !bp.length) out.parts = ap
-  else if (bp.length) {
-    // Prefer rows that have description
-    const score = (parts: unknown[]) =>
-      parts.filter((x) => x && typeof x === 'object' && (x as { description?: string }).description)
-        .length
-    out.parts = score(bp) >= score(ap) ? bp : ap
-  }
+  else if (ap.length >= bp.length && ap.length) out.parts = ap
   return out
-}
-
-export function enrichFromRaw(p: ParsedPfr, raw: string): ParsedPfr {
-  return mergeParsed(p, parsePfrLocal(raw))
 }
 
 export function normalizeParts(parts: unknown): Record<string, unknown>[] | null {
@@ -313,23 +372,11 @@ export function normalizeParts(parts: unknown): Record<string, unknown>[] | null
     const failure = p.failurePartNo ?? p.failure_part_no ?? null
     const replacement = p.replacementPartNo ?? p.replacement_part_no ?? p.part_no ?? failure
     let description = p.description != null ? String(p.description).trim() : null
-    // Perbaiki salah kolom: description yang sebenarnya part number
-    if (description && /^SLG[-]?\d+/i.test(description) && !replacement) {
-      // swapped
-    }
-    if (description && /^SLG[-]?\d+/i.test(description)) {
-      // description is part code — likely misaligned; keep as part, clear desc if no real text
-      if (!/[A-Za-z]{3,}/.test(description.replace(/SLG[-\d\s]/gi, ''))) {
-        description = null
-      }
-    }
+    if (description && /^SLG[-]?\d+/i.test(description)) description = null
     const qty = num(p.qty ?? p.quantity)
     const unitPrice = num(p.unitPrice ?? p.unit_price ?? p.price)
     let amount = num(p.amount ?? p.total)
-    // Jika unit_price keliru dapat qty (mis. 1) dan amount kosong
-    if (amount == null && qty != null && unitPrice != null && unitPrice !== qty) {
-      amount = qty * unitPrice
-    }
+    if (amount == null && qty != null && unitPrice != null) amount = qty * unitPrice
     return {
       part_no: replacement != null ? String(replacement).trim().replace(/\s+/g, '') : null,
       failure_part_no: failure != null ? String(failure).trim().replace(/\s+/g, '') : null,
@@ -378,12 +425,20 @@ export async function invokeParsePfr(rawText: string): Promise<ParseResult> {
     warning = e instanceof Error ? e.message : 'Parser server tidak terjangkau; memakai parser lokal.'
   }
 
-  const merged = enrichFromRaw(mergeParsed(remote, local), rawText)
-  // Jika field inti masih kosong, pastikan model tercatat local
-  if (!merged.model && !merged.serialNo) {
-    model = 'local-parser'
-  } else if (model.startsWith('source-parser') && merged.model) {
-    // ok
+  // Lokal diutamakan untuk field kosong dari server; tanggal dinormalisasi
+  const merged = mergeParsed(remote, local)
+  for (const dk of [
+    'salesDate',
+    'failureDate',
+    'dealerRepairDate',
+    'completionDate',
+    'dealerClaimDate',
+  ] as const) {
+    const d = dateIso(merged[dk])
+    if (d) merged[dk] = d
+    else if (merged[dk] && !/^\d{4}-\d{2}-\d{2}$/.test(String(merged[dk]))) {
+      merged[dk] = null
+    }
   }
 
   return { data: merged, model: `${model}+local`, warning }
@@ -425,11 +480,11 @@ export function parsedToClaimRow(p: ParsedPfr, rawText: string) {
     dealer_wo_so: p.dealerWoSo ?? null,
     app_code: p.appCode ?? null,
     sdlg_no: p.sdlgNo && !/SDLG-PFR/i.test(p.sdlgNo) ? p.sdlgNo : null,
-    sales_date: p.salesDate ?? null,
-    failure_date: p.failureDate ?? null,
-    dealer_repair_date: p.dealerRepairDate ?? null,
-    completion_date: p.completionDate ?? null,
-    dealer_claim_date: p.dealerClaimDate ?? null,
+    sales_date: dateIso(p.salesDate) ?? p.salesDate ?? null,
+    failure_date: dateIso(p.failureDate) ?? p.failureDate ?? null,
+    dealer_repair_date: dateIso(p.dealerRepairDate) ?? p.dealerRepairDate ?? null,
+    completion_date: dateIso(p.completionDate) ?? p.completionDate ?? null,
+    dealer_claim_date: dateIso(p.dealerClaimDate) ?? p.dealerClaimDate ?? null,
     hm_failure: p.hmFailure ?? null,
     hm_completion: p.hmCompletion ?? null,
     fault_description: p.faultDescription ?? null,
@@ -449,7 +504,7 @@ export function parsedToClaimRow(p: ParsedPfr, rawText: string) {
     mileage_amount: mileageAmount,
     other_amount: otherAmount,
     parts_total: partsTotal,
-    total_amount: total,
+    total_amount: total ?? partsTotal,
     currency: p.currency ?? null,
     claim_type: p.claimType ?? null,
     repair_status: p.repairStatus ?? null,
