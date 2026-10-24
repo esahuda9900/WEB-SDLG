@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage'
 import RequireAuth from './components/RequireAuth'
 import ClaimsListPage from './pages/ClaimsListPage'
 import ClaimDetailPage from './pages/ClaimDetailPage'
+import NewClaimPage from './pages/NewClaimPage'
 
 function Home() {
   const { user, role, signOut } = useAuth()
@@ -11,7 +12,7 @@ function Home() {
   return (
     <div className="page">
       <h1>Warranty Claim SDLG</h1>
-      <p className="muted">Milestone M6 — Edit data klaim</p>
+      <p className="muted">Milestone M7 — Klaim baru</p>
       <div className="card">
         <p>
           Masuk sebagai: <strong>{user?.email}</strong>
@@ -19,9 +20,12 @@ function Home() {
         <p>
           Role: <strong>{role?.role ?? '—'}</strong>
         </p>
-        <p>
+        <p style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
           <Link className="btn primary" to="/klaim">
-            Buka daftar klaim
+            Daftar klaim
+          </Link>
+          <Link className="btn" to="/klaim/baru">
+            Klaim baru
           </Link>
         </p>
         <button type="button" className="btn" onClick={() => signOut()}>
@@ -53,11 +57,14 @@ function Shell() {
           SDLG Warranty
         </Link>
         <nav className="nav">
-          <span className="badge">M6 · Edit</span>
+          <span className="badge">M7 · Baru</span>
           {!loading && session && isAdmin && (
             <>
               <Link to="/klaim" className="nav-link">
                 Klaim
+              </Link>
+              <Link to="/klaim/baru" className="nav-link">
+                Baru
               </Link>
               <button type="button" className="nav-link btn-link" onClick={() => signOut()}>
                 Keluar
@@ -87,6 +94,14 @@ function Shell() {
             element={
               <RequireAuth>
                 <ClaimsListPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/klaim/baru"
+            element={
+              <RequireAuth>
+                <NewClaimPage />
               </RequireAuth>
             }
           />

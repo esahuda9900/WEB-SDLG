@@ -119,11 +119,14 @@ export default function ClaimsListPage() {
 
   return (
     <div className="page page-wide">
-      <div className="page-head">
+      <div className="page-head" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '1rem' }}>
         <div>
           <h1>Daftar klaim</h1>
           <p className="muted">Cari, filter, dan buka detail klaim warranty</p>
         </div>
+        <Link className="btn primary" to="/klaim/baru">
+          + Klaim baru
+        </Link>
       </div>
 
       <div className="tabs">
