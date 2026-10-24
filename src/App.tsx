@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './auth/AuthContext'
 import LoginPage from './pages/LoginPage'
 import RequireAuth from './components/RequireAuth'
 import ClaimsListPage from './pages/ClaimsListPage'
-import ClaimDetailPlaceholder from './pages/ClaimDetailPlaceholder'
+import ClaimDetailPage from './pages/ClaimDetailPage'
 
 function Home() {
   const { user, role, signOut } = useAuth()
@@ -11,7 +11,7 @@ function Home() {
   return (
     <div className="page">
       <h1>Warranty Claim SDLG</h1>
-      <p className="muted">Milestone M3 — Daftar klaim</p>
+      <p className="muted">Milestone M4 — Detail klaim</p>
       <div className="card">
         <p>
           Masuk sebagai: <strong>{user?.email}</strong>
@@ -53,7 +53,7 @@ function Shell() {
           SDLG Warranty
         </Link>
         <nav className="nav">
-          <span className="badge">M3 · Daftar</span>
+          <span className="badge">M4 · Detail</span>
           {!loading && session && isAdmin && (
             <>
               <Link to="/klaim" className="nav-link">
@@ -94,7 +94,7 @@ function Shell() {
             path="/klaim/:claimId"
             element={
               <RequireAuth>
-                <ClaimDetailPlaceholder />
+                <ClaimDetailPage />
               </RequireAuth>
             }
           />
