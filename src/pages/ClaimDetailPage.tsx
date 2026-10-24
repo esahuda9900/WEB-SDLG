@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { toDisplayStatus } from '../lib/claimStatus'
 import StatusChangePanel from '../components/StatusChangePanel'
 import ClaimEditForm, { type EditableClaimFields } from '../components/ClaimEditForm'
+import ArchivePanel from '../components/ArchivePanel'
 
 type ClaimDetail = EditableClaimFields & {
   id: string
@@ -267,6 +268,24 @@ export default function ClaimDetailPage() {
                     }
                   : prev,
               )
+            }}
+          />
+
+          <ArchivePanel
+            claimUuid={row.id}
+            claimIdLabel={row.claim_id}
+            archivedAt={row.archived_at}
+            onChanged={(next) => {
+              setRow((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      archived_at: next.archived_at,
+                      last_updated: next.last_updated,
+                    }
+                  : prev,
+              )
+              setEditing(false)
             }}
           />
 
