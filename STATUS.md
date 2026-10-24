@@ -2,30 +2,28 @@
 Terakhir diperbarui: 2026-10-24 oleh agent
 
 ## Posisi sekarang
-- Milestone aktif: **M5 — Ubah status klaim** (deploy sukses, menunggu tes pemilik)
-- Yang sedang dikerjakan: Menunggu tes ubah status di production.
+- Milestone aktif: **M6 — Edit data klaim**
+- Yang sedang dikerjakan: Form edit di branch `feature/m6-edit-klaim`
 
 ## Catatan Estafet
-- Sedang mengerjakan: M5 — tes
+- Sedang mengerjakan: M6
 - Sudah sampai mana:
-  - PR #5 di-merge (squash)
-  - Deploy Pages **sukses** (run #13)
-  - Panel ubah status live di detail klaim
-- File / branch: main
-- Langkah berikutnya: Pemilik tes di klaim Draft → OK → M6 (input klaim baru / edit field) sesuai prioritas
+  - M5 status OK pemilik
+  - Tombol Edit data di detail; form field utama; simpan ke claims
+  - Belum PR/merge M6
+- File / branch: feature/m6-edit-klaim
+- Langkah berikutnya: PR → merge → deploy → pemilik tes edit
 
 ## Sudah selesai dan dites pemilik
 - M1 fondasi
+- M5 ubah status (Status OK)
 
 ## Sudah dibuat, belum dites pemilik
-- M2 login, M3 daftar, M4 detail, M5 ubah status
-
-## Bug / masalah yang diketahui
-- (kosong)
+- M2 login, M3 daftar, M4 detail, M6 edit (branch)
 
 ## Langkah berikutnya
-1. Tes ubah status pada klaim Draft
-2. Setelah OK → lanjut input klaim baru atau edit field
+1. PR M6 → merge → deploy
+2. Tes Edit data pada klaim Draft
 
 ## Commit stabil terakhir
-- 7134f04 — M5 merge
+- 02b9b97 — STATUS M5 menunggu tes

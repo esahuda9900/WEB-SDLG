@@ -3,29 +3,17 @@ import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { toDisplayStatus } from '../lib/claimStatus'
 import StatusChangePanel from '../components/StatusChangePanel'
+import ClaimEditForm, { type EditableClaimFields } from '../components/ClaimEditForm'
 
-type ClaimDetail = {
+type ClaimDetail = EditableClaimFields & {
   id: string
   claim_id: string
   claim_type: string | null
   claim_status: string | null
   repair_status: string | null
-  model: string | null
-  serial_no: string | null
-  engine_serial_no: string | null
-  customer: string | null
-  branch: string | null
   dealer_name: string | null
   distributor: string | null
-  sdlg_no: string | null
-  dealer_claim_no: string | null
-  dealer_wo_so: string | null
   sdlg_submission_no: string | null
-  sales_date: string | null
-  failure_date: string | null
-  dealer_repair_date: string | null
-  completion_date: string | null
-  dealer_claim_date: string | null
   input_date: string | null
   status_date: string | null
   sdlg_audit_date: string | null
@@ -35,29 +23,8 @@ type ClaimDetail = {
   invoice_date: string | null
   payment_date: string | null
   payment_amount: number | null
-  hm_failure: number | null
-  hm_completion: number | null
-  fault_description: string | null
-  cause_analyze: string | null
-  comment: string | null
-  causing_part_no: string | null
-  causing_part_desc: string | null
-  failure_part_location: string | null
-  repair_method: string | null
-  technical_personnel: string | null
-  working_conditions: string | null
   rejection_reason: string | null
   status_update_reason: string | null
-  labour_hrs: number | null
-  labour_rate: number | null
-  labour_amount: number | null
-  mileage_km: number | null
-  mileage_rate: number | null
-  mileage_amount: number | null
-  other_amount: number | null
-  parts_total: number | null
-  total_amount: number | null
-  currency: string | null
   parts: unknown
   photo_count: number | null
   archived_at: string | null
@@ -156,6 +123,8 @@ export default function ClaimDetailPage() {
   const [row, setRow] = useState<ClaimDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [saveOk, setSaveOk] = useState<string | null>(null)
 
   useEffect(() => {
     if (!claimId) return
@@ -226,6 +195,7 @@ export default function ClaimDetailPage() {
   }
 
   const display = toDisplayStatus(row.claim_status, row.archived_at)
+  const canEdit = !row.archived_at
 
   return (
     <div className="page page-wide">
@@ -241,8 +211,21 @@ export default function ClaimDetailPage() {
             {row.repair_status ? ` · Repair: ${row.repair_status}` : ''}
           </p>
         </div>
-        <span className={`status-pill status-${slug(display)}`}>{display}</span>
+        <div className="detail-header-actions">
+          <span className={`status-pill status-${slug(display)}`}>{display}</span>
+          {canEdit && !editing && (
+            <button type="button" className="btn" onClick={() => { setEditing(true); setSaveOk(null) }}>
+              Edit data
+            </button>
+          )}
+        </div>
       </div>
+
+      {saveOk && (
+        <div className="alert alert-ok" role="status">
+          {saveOk}
+        </div>
+      )}
 
       {row.rejection_reason && (
         <div className="alert alert-error" role="status">
@@ -250,96 +233,111 @@ export default function ClaimDetailPage() {
         </div>
       )}
 
-      <StatusChangePanel
-        claimUuid={row.id}
-        claimIdLabel={row.claim_id}
-        currentStatus={row.claim_status}
-        archivedAt={row.archived_at}
-        onUpdated={(next) => {
-          setRow((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  claim_status: next.claim_status,
-                  status_update_reason: next.status_update_reason,
-                  rejection_reason:
-                    next.claim_status === 'Rejected'
-                      ? next.rejection_reason
-                      : prev.rejection_reason,
-                  status_date: next.status_date,
-                  last_updated: next.last_updated,
-                }
-              : prev,
-          )
-        }}
-      />
+      {editing ? (
+        <ClaimEditForm
+          claimUuid={row.id}
+          initial={row}
+          onCancel={() => setEditing(false)}
+          onSaved={(next) => {
+            setRow((prev) => (prev ? { ...prev, ...next } : prev))
+            setEditing(false)
+            setSaveOk('Data klaim berhasil disimpan.')
+          }}
+        />
+      ) : (
+        <>
+          <StatusChangePanel
+            claimUuid={row.id}
+            claimIdLabel={row.claim_id}
+            currentStatus={row.claim_status}
+            archivedAt={row.archived_at}
+            onUpdated={(next) => {
+              setRow((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      claim_status: next.claim_status,
+                      status_update_reason: next.status_update_reason,
+                      rejection_reason:
+                        next.claim_status === 'Rejected'
+                          ? next.rejection_reason
+                          : prev.rejection_reason,
+                      status_date: next.status_date,
+                      last_updated: next.last_updated,
+                    }
+                  : prev,
+              )
+            }}
+          />
 
-      <Block title="Identitas & unit">
-        <Field label="Model" value={row.model} />
-        <Field label="Serial" value={<span className="mono">{row.serial_no ?? '—'}</span>} />
-        <Field label="Engine serial" value={<span className="mono">{row.engine_serial_no ?? '—'}</span>} />
-        <Field label="Customer" value={row.customer} />
-        <Field label="Cabang" value={row.branch} />
-        <Field label="Dealer" value={row.dealer_name ?? row.distributor} />
-        <Field label="No. SDLG" value={<span className="mono">{row.sdlg_no ?? '—'}</span>} />
-        <Field label="No. klaim dealer" value={row.dealer_claim_no} />
-        <Field label="WO / SO" value={row.dealer_wo_so} />
-        <Field label="Tipe klaim" value={row.claim_type} />
-        <Field label="HM saat gagal" value={fmtNum(row.hm_failure)} />
-        <Field label="HM selesai" value={fmtNum(row.hm_completion)} />
-      </Block>
+          <Block title="Identitas & unit">
+            <Field label="Model" value={row.model} />
+            <Field label="Serial" value={<span className="mono">{row.serial_no ?? '—'}</span>} />
+            <Field label="Engine serial" value={<span className="mono">{row.engine_serial_no ?? '—'}</span>} />
+            <Field label="Customer" value={row.customer} />
+            <Field label="Cabang" value={row.branch} />
+            <Field label="Dealer" value={row.dealer_name ?? row.distributor} />
+            <Field label="No. SDLG" value={<span className="mono">{row.sdlg_no ?? '—'}</span>} />
+            <Field label="No. klaim dealer" value={row.dealer_claim_no} />
+            <Field label="WO / SO" value={row.dealer_wo_so} />
+            <Field label="Tipe klaim" value={row.claim_type} />
+            <Field label="HM saat gagal" value={fmtNum(row.hm_failure)} />
+            <Field label="HM selesai" value={fmtNum(row.hm_completion)} />
+          </Block>
 
-      <Block title="Tanggal penting">
-        <Field label="Tanggal jual" value={fmtDate(row.sales_date)} />
-        <Field label="Tanggal gagal" value={fmtDate(row.failure_date)} />
-        <Field label="Mulai perbaikan" value={fmtDate(row.dealer_repair_date)} />
-        <Field label="Selesai perbaikan" value={fmtDate(row.completion_date)} />
-        <Field label="Tanggal klaim dealer" value={fmtDate(row.dealer_claim_date)} />
-        <Field label="Input" value={fmtDate(row.input_date)} />
-        <Field label="Status date" value={fmtDate(row.status_date)} />
-        <Field label="Audit SDLG" value={fmtDate(row.sdlg_audit_date)} />
-        <Field label="Approval SDLG" value={fmtDate(row.sdlg_approval_date)} />
-        <Field label="Billing" value={fmtDate(row.billing_date)} />
-        <Field label="Invoice" value={row.invoice_no ? `${row.invoice_no} (${fmtDate(row.invoice_date)})` : fmtDate(row.invoice_date)} />
-        <Field label="Pembayaran" value={row.payment_date ? `${fmtDate(row.payment_date)} · ${fmtMoney(row.payment_amount, row.currency)}` : '—'} />
-      </Block>
+          <Block title="Tanggal penting">
+            <Field label="Tanggal jual" value={fmtDate(row.sales_date)} />
+            <Field label="Tanggal gagal" value={fmtDate(row.failure_date)} />
+            <Field label="Mulai perbaikan" value={fmtDate(row.dealer_repair_date)} />
+            <Field label="Selesai perbaikan" value={fmtDate(row.completion_date)} />
+            <Field label="Tanggal klaim dealer" value={fmtDate(row.dealer_claim_date)} />
+            <Field label="Input" value={fmtDate(row.input_date)} />
+            <Field label="Status date" value={fmtDate(row.status_date)} />
+            <Field label="Audit SDLG" value={fmtDate(row.sdlg_audit_date)} />
+            <Field label="Approval SDLG" value={fmtDate(row.sdlg_approval_date)} />
+            <Field label="Billing" value={fmtDate(row.billing_date)} />
+            <Field label="Invoice" value={row.invoice_no ? `${row.invoice_no} (${fmtDate(row.invoice_date)})` : fmtDate(row.invoice_date)} />
+            <Field label="Pembayaran" value={row.payment_date ? `${fmtDate(row.payment_date)} · ${fmtMoney(row.payment_amount, row.currency)}` : '—'} />
+          </Block>
 
-      <TextBlock title="Deskripsi kerusakan" text={row.fault_description} />
-      <TextBlock title="Analisis penyebab" text={row.cause_analyze} />
-      <TextBlock title="Metode perbaikan" text={row.repair_method} />
-      <TextBlock title="Komentar" text={row.comment} />
+          <TextBlock title="Deskripsi kerusakan" text={row.fault_description} />
+          <TextBlock title="Analisis penyebab" text={row.cause_analyze} />
+          <TextBlock title="Metode perbaikan" text={row.repair_method} />
+          <TextBlock title="Komentar" text={row.comment} />
 
-      <Block title="Part penyebab & kondisi">
-        <Field label="Part no" value={<span className="mono">{row.causing_part_no ?? '—'}</span>} />
-        <Field label="Deskripsi part" value={row.causing_part_desc} />
-        <Field label="Lokasi" value={row.failure_part_location} />
-        <Field label="Kondisi kerja" value={row.working_conditions} />
-        <Field label="Teknisi" value={row.technical_personnel} />
-        <Field label="Jumlah foto" value={row.photo_count != null ? String(row.photo_count) : '—'} />
-      </Block>
+          <Block title="Part penyebab & kondisi">
+            <Field label="Part no" value={<span className="mono">{row.causing_part_no ?? '—'}</span>} />
+            <Field label="Deskripsi part" value={row.causing_part_desc} />
+            <Field label="Lokasi" value={row.failure_part_location} />
+            <Field label="Kondisi kerja" value={row.working_conditions} />
+            <Field label="Teknisi" value={row.technical_personnel} />
+            <Field label="Jumlah foto" value={row.photo_count != null ? String(row.photo_count) : '—'} />
+          </Block>
 
-      <Block title="Biaya">
-        <Field label="Labour (jam)" value={fmtNum(row.labour_hrs, 1)} />
-        <Field label="Labour rate" value={fmtMoney(row.labour_rate, row.currency)} />
-        <Field label="Labour amount" value={fmtMoney(row.labour_amount, row.currency)} />
-        <Field label="Mileage (km)" value={fmtNum(row.mileage_km)} />
-        <Field label="Mileage rate" value={fmtMoney(row.mileage_rate, row.currency)} />
-        <Field label="Mileage amount" value={fmtMoney(row.mileage_amount, row.currency)} />
-        <Field label="Other" value={fmtMoney(row.other_amount, row.currency)} />
-        <Field label="Parts total" value={fmtMoney(row.parts_total, row.currency)} />
-        <Field label="Total" value={<strong>{fmtMoney(row.total_amount, row.currency)}</strong>} />
-      </Block>
+          <Block title="Biaya">
+            <Field label="Labour (jam)" value={fmtNum(row.labour_hrs, 1)} />
+            <Field label="Labour rate" value={fmtMoney(row.labour_rate, row.currency)} />
+            <Field label="Labour amount" value={fmtMoney(row.labour_amount, row.currency)} />
+            <Field label="Mileage (km)" value={fmtNum(row.mileage_km)} />
+            <Field label="Mileage rate" value={fmtMoney(row.mileage_rate, row.currency)} />
+            <Field label="Mileage amount" value={fmtMoney(row.mileage_amount, row.currency)} />
+            <Field label="Other" value={fmtMoney(row.other_amount, row.currency)} />
+            <Field label="Parts total" value={fmtMoney(row.parts_total, row.currency)} />
+            <Field label="Total" value={<strong>{fmtMoney(row.total_amount, row.currency)}</strong>} />
+          </Block>
 
-      <section className="card detail-block">
-        <h2 className="detail-block-title">Parts</h2>
-        <PartsTable parts={row.parts} />
-      </section>
+          <section className="card detail-block">
+            <h2 className="detail-block-title">Parts</h2>
+            <PartsTable parts={row.parts} />
+          </section>
 
-      {(row.status_update_reason || row.sdlg_submission_no) && (
-        <Block title="Catatan status / SDLG">
-          <Field label="No. submission SDLG" value={row.sdlg_submission_no} />
-          <Field label="Alasan update status" value={row.status_update_reason} />
-        </Block>
+          {(row.status_update_reason || row.sdlg_submission_no) && (
+            <Block title="Catatan status / SDLG">
+              <Field label="No. submission SDLG" value={row.sdlg_submission_no} />
+              <Field label="Alasan update status" value={row.status_update_reason} />
+            </Block>
+          )}
+        </>
       )}
 
       <p className="muted small">
