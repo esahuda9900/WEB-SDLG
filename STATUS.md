@@ -2,31 +2,27 @@
 Terakhir diperbarui: 2026-10-24 oleh agent
 
 ## Posisi sekarang
-- Milestone aktif: **M9 — Export CSV** (push ke main, menunggu CI/deploy + tes pemilik)
-- Protokol baru: eksekusi langsung merge main (tanpa tunggu review PR)
+- Milestone aktif: **Parse PFR** (Edge Function + halaman web)
+- Yang sedang dikerjakan: Deploy Pages + tes pemilik
 
 ## Catatan Estafet
-- Sedang mengerjakan: M9 export CSV
+- Sedang mengerjakan: Parse PFR
 - Sudah sampai mana:
-  - M8 Arsip OK pemilik
-  - Export CSV di main (tombol di daftar, filter/tab, maks 2000 baris)
-  - docs/BOOTSTRAP.md diselaraskan protokol eksekusi langsung
+  - Edge Function `gemini-parse-claim` CORS diizinkan untuk GitHub Pages
+  - Halaman `/klaim/parse`: tempel → parse → pratinjau → simpan/update
+  - Parser lokal (tab PFR) aktif; Gemini fallback jika key terpasang di secret
 - File / branch: main
-- Langkah berikutnya: CI hijau → pemilik tes Export CSV
+- Langkah berikutnya: CI → pemilik tes parse
 
 ## Sudah selesai dan dites pemilik
-- M1 fondasi, M5 status, M6 edit, M7 klaim baru, M8 arsip
+- M1, M5 status, M6 edit, M7 baru, M8 arsip
 
 ## Sudah dibuat, belum dites pemilik
-- M2 login, M3 daftar, M4 detail, M9 export
-
-## Hal baru yang dipelajari hari ini
-- Protokol: auto merge ke main; tetap OK untuk DB/struktur/file inti
+- M2–M4, M9 export, Parse PFR
 
 ## Langkah berikutnya
-1. Tunggu deploy Pages
-2. Pemilik tes Export CSV
-3. Lanjut parse PFR (M5 di roadmap AGENTS) atau polish
+1. Tes Parse PFR di live
+2. Helper copas form SDLG
 
 ## Commit stabil terakhir
-- 7a4ada0 — M8 arsip
+- 9ed7e35 — M9 export

@@ -5,6 +5,7 @@ import RequireAuth from './components/RequireAuth'
 import ClaimsListPage from './pages/ClaimsListPage'
 import ClaimDetailPage from './pages/ClaimDetailPage'
 import NewClaimPage from './pages/NewClaimPage'
+import ParsePfrPage from './pages/ParsePfrPage'
 
 function Home() {
   const { user, role, signOut } = useAuth()
@@ -12,7 +13,7 @@ function Home() {
   return (
     <div className="page">
       <h1>Warranty Claim SDLG</h1>
-      <p className="muted">Milestone M9 — Export CSV</p>
+      <p className="muted">Parse PFR · daftar · edit</p>
       <div className="card">
         <p>
           Masuk sebagai: <strong>{user?.email}</strong>
@@ -23,6 +24,9 @@ function Home() {
         <p style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
           <Link className="btn primary" to="/klaim">
             Daftar klaim
+          </Link>
+          <Link className="btn" to="/klaim/parse">
+            Parse PFR
           </Link>
           <Link className="btn" to="/klaim/baru">
             Klaim baru
@@ -57,11 +61,14 @@ function Shell() {
           SDLG Warranty
         </Link>
         <nav className="nav">
-          <span className="badge">M9 · Export</span>
+          <span className="badge">Parse PFR</span>
           {!loading && session && isAdmin && (
             <>
               <Link to="/klaim" className="nav-link">
                 Klaim
+              </Link>
+              <Link to="/klaim/parse" className="nav-link">
+                Parse
               </Link>
               <Link to="/klaim/baru" className="nav-link">
                 Baru
@@ -81,38 +88,11 @@ function Shell() {
       <main className="main-fluid">
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/"
-            element={
-              <RequireAuth>
-                <Home />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/klaim"
-            element={
-              <RequireAuth>
-                <ClaimsListPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/klaim/baru"
-            element={
-              <RequireAuth>
-                <NewClaimPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/klaim/:claimId"
-            element={
-              <RequireAuth>
-                <ClaimDetailPage />
-              </RequireAuth>
-            }
-          />
+          <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
+          <Route path="/klaim" element={<RequireAuth><ClaimsListPage /></RequireAuth>} />
+          <Route path="/klaim/baru" element={<RequireAuth><NewClaimPage /></RequireAuth>} />
+          <Route path="/klaim/parse" element={<RequireAuth><ParsePfrPage /></RequireAuth>} />
+          <Route path="/klaim/:claimId" element={<RequireAuth><ClaimDetailPage /></RequireAuth>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
