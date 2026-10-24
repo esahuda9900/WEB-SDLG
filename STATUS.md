@@ -2,27 +2,27 @@
 Terakhir diperbarui: 2026-10-24 oleh agent
 
 ## Posisi sekarang
-- Milestone aktif: **M1 — Fondasi + backup darurat**
-- Yang sedang dikerjakan: PR #1 sudah di-merge. Workflow deploy Pages sedang antre / berjalan.
+- Milestone aktif: **M1 — Fondasi + backup darurat** (deploy sukses, menunggu tes pemilik)
+- Yang sedang dikerjakan: Site live, pemilik perlu buka URL dan konfirmasi.
 
 ## Catatan Estafet (update di setiap langkah, bukan hanya akhir sesi)
-- Sedang mengerjakan: M1 — aktifkan Pages + tes URL
+- Sedang mengerjakan: M1 hampir selesai
 - Sudah sampai mana:
-  - PR #1 (feature/m1-fondasi) di-merge ke main (squash)
-  - Scaffolding React + Vite + TypeScript ada di main
-  - base path `/WEB-SDLG/`, HashRouter, workflow deploy
-  - docs/backup-darurat.md sudah ada
-  - Workflow run #1 status: queued/in progress
+  - PR M1 di-merge
+  - Workflow deploy Vite → GitHub Pages **sukses** (run #5)
+  - Workflow static.yml yang salah (upload source) sudah dihapus
+  - Site live: https://esahuda9900.github.io/WEB-SDLG/
+  - HTML sudah berisi assets hasil build (bukan source mentah)
 - File yang sedang diubah / branch: main
-- Langkah berikutnya: Pemilik aktifkan GitHub Pages (source = GitHub Actions) → tunggu workflow hijau → tes URL
+- Langkah berikutnya: Pemilik tes URL → kalau OK, tutup M1 → mulai M2 Login
 - Keputusan yang belum final: (tidak ada)
 - Bug yang sedang dilacak: (belum)
 
 ## Sudah selesai dan dites pemilik
-- (kosong)
+- (kosong — menunggu konfirmasi URL)
 
 ## Sudah dibuat, belum dites pemilik
-- Scaffolding M1 di main
+- Halaman beranda M1 di https://esahuda9900.github.io/WEB-SDLG/
 - docs/backup-darurat.md
 
 ## Bug / masalah yang diketahui
@@ -39,10 +39,9 @@ Terakhir diperbarui: 2026-10-24 oleh agent
 - Jawaban M0 sudah dicatat
 
 ## Langkah berikutnya
-1. Aktifkan GitHub Pages: Settings → Pages → Source = **GitHub Actions**
-2. Tunggu workflow hijau di tab Actions
-3. Tes: https://esahuda9900.github.io/WEB-SDLG/
-4. Setelah lolos → tutup M1, lanjut M2 Login
+1. Pemilik buka https://esahuda9900.github.io/WEB-SDLG/ dan konfirmasi tampilan
+2. Setelah OK → M1 selesai, lanjut M2 Login
 
 ## Commit stabil terakhir (untuk rollback)
-- 9795c35 — M1 merge (squash)
+- 0beb10b — hapus static.yml + deploy sukses
+- 4eb4c6e — fix ci tanpa cache npm
