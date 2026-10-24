@@ -2,27 +2,22 @@
 Terakhir diperbarui: 2026-10-24 oleh agent
 
 ## Posisi sekarang
-- Milestone aktif: **Parse PFR** (Edge Function + halaman web)
-- Yang sedang dikerjakan: Deploy Pages + tes pemilik
+- Milestone aktif: **Parse PFR** (simpan field lengkap)
+- Yang sedang dikerjakan: Deploy + tes pemilik dengan contoh PFR
 
 ## Catatan Estafet
-- Sedang mengerjakan: Parse PFR
-- Sudah sampai mana:
-  - Edge Function `gemini-parse-claim` CORS diizinkan untuk GitHub Pages
-  - Halaman `/klaim/parse`: tempel → parse → pratinjau → simpan/update
-  - Parser lokal (tab PFR) aktif; Gemini fallback jika key terpasang di secret
-- File / branch: main
-- Langkah berikutnya: CI → pemilik tes parse
+- Parse menyimpan: identitas, tanggal, HM, kerusakan, parts JSON, labour/mileage, total, source_raw_text
+- Pratinjau diperluas + tabel parts
 
 ## Sudah selesai dan dites pemilik
-- M1, M5 status, M6 edit, M7 baru, M8 arsip
+- M1, M5–M8
 
-## Sudah dibuat, belum dites pemilik
-- M2–M4, M9 export, Parse PFR
+## Belum dites pemilik
+- Parse PFR lengkap, M9 export, M2–M4
 
 ## Langkah berikutnya
-1. Tes Parse PFR di live
-2. Helper copas form SDLG
+1. Pemilik tes parse contoh 1 & 2
+2. Cek detail: parts + biaya terisi
 
 ## Commit stabil terakhir
-- 9ed7e35 — M9 export
+- f73b1b5 — parse PFR awal
