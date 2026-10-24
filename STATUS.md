@@ -2,26 +2,26 @@
 Terakhir diperbarui: 2026-10-24 oleh agent
 
 ## Posisi sekarang
-- Milestone aktif: **M2 — Login & role admin**
-- Yang sedang dikerjakan: Login UI + AuthContext di branch `feature/m2-login`
+- Milestone aktif: **M2 — Login & role admin** (deploy sukses, menunggu tes login pemilik)
+- Yang sedang dikerjakan: Menunggu konfirmasi login di production.
 
 ## Catatan Estafet (update di setiap langkah, bukan hanya akhir sesi)
-- Sedang mengerjakan: M2 login
+- Sedang mengerjakan: M2 — tes login
 - Sudah sampai mana:
-  - M1 ditutup (Pages live, pemilik konfirmasi tampilan OK)
-  - Role admin diset untuk esahuda9900@gmail.com di app_user_roles
-  - Branch feature/m2-login: halaman login, proteksi rute, Supabase client
-  - Belum merge / belum deploy M2
-- File yang sedang diubah / branch: feature/m2-login
-- Langkah berikutnya: PR → merge → deploy → pemilik tes login
+  - PR #2 di-merge (squash)
+  - Deploy GitHub Pages **sukses** (run #7)
+  - Role admin aktif untuk esahuda9900@gmail.com
+  - Halaman login + proteksi rute live
+- File yang sedang diubah / branch: main
+- Langkah berikutnya: Pemilik tes login → konfirmasi OK → tutup M2 → M3 daftar klaim
 - Keputusan yang belum final: (tidak ada)
 - Bug yang sedang dilacak: (belum)
 
 ## Sudah selesai dan dites pemilik
-- M1 fondasi + Pages (tampilan OK)
+- M1 fondasi + Pages
 
 ## Sudah dibuat, belum dites pemilik
-- M2 login di branch feature/m2-login
+- M2 login di https://esahuda9900.github.io/WEB-SDLG/
 
 ## Bug / masalah yang diketahui
 - (kosong)
@@ -31,15 +31,14 @@ Terakhir diperbarui: 2026-10-24 oleh agent
 - Baca-tulis claims yang sama
 - Gemini lewat Edge Function diizinkan
 - Hanya admin; public signup mati
-- 2026-10-24: esahuda9900@gmail.com = admin
+- esahuda9900@gmail.com = admin
 
 ## Hal baru yang dipelajari hari ini (dari penjelasan pemilik)
 - OK lanjut M2 + set admin
 
 ## Langkah berikutnya
-1. PR feature/m2-login → main
-2. Deploy
-3. Pemilik tes login dengan akun admin
+1. Pemilik tes login (langkah di laporan chat)
+2. Setelah OK → M3 Daftar klaim
 
 ## Commit stabil terakhir (untuk rollback)
-- 5462815 — STATUS M1 menunggu tes (sebelum M2)
+- aff66fb — M2 merge
