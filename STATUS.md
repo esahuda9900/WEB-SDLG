@@ -3,28 +3,26 @@ Terakhir diperbarui: 2026-10-24 oleh agent
 
 ## Posisi sekarang
 - Milestone aktif: **M1 — Fondasi + backup darurat**
-- Yang sedang dikerjakan: Scaffolding selesai di branch `feature/m1-fondasi`. Siap PR & aktifkan GitHub Pages.
+- Yang sedang dikerjakan: PR #1 sudah di-merge. Workflow deploy Pages sedang antre / berjalan.
 
 ## Catatan Estafet (update di setiap langkah, bukan hanya akhir sesi)
-- Sedang mengerjakan: M1 — fondasi web
+- Sedang mengerjakan: M1 — aktifkan Pages + tes URL
 - Sudah sampai mana:
-  - Branch `feature/m1-fondasi` dibuat
-  - Scaffolding React + Vite + TypeScript
-  - base path `/WEB-SDLG/`, HashRouter
-  - Halaman beranda sederhana (bahasa Indonesia)
-  - Workflow GitHub Actions deploy ke Pages
-  - Rencana backup darurat dicatat di `docs/backup-darurat.md`
-  - Belum ada koneksi Supabase, belum ada login, belum migration
-- File yang sedang diubah / branch: `feature/m1-fondasi`
-- Langkah berikutnya: Buka PR → merge ke main → aktifkan GitHub Pages → pemilik tes URL
-- Keputusan yang belum final: (tidak ada untuk M1)
+  - PR #1 (feature/m1-fondasi) di-merge ke main (squash)
+  - Scaffolding React + Vite + TypeScript ada di main
+  - base path `/WEB-SDLG/`, HashRouter, workflow deploy
+  - docs/backup-darurat.md sudah ada
+  - Workflow run #1 status: queued/in progress
+- File yang sedang diubah / branch: main
+- Langkah berikutnya: Pemilik aktifkan GitHub Pages (source = GitHub Actions) → tunggu workflow hijau → tes URL
+- Keputusan yang belum final: (tidak ada)
 - Bug yang sedang dilacak: (belum)
 
 ## Sudah selesai dan dites pemilik
 - (kosong)
 
 ## Sudah dibuat, belum dites pemilik
-- Scaffolding M1 di branch feature/m1-fondasi
+- Scaffolding M1 di main
 - docs/backup-darurat.md
 
 ## Bug / masalah yang diketahui
@@ -41,12 +39,10 @@ Terakhir diperbarui: 2026-10-24 oleh agent
 - Jawaban M0 sudah dicatat
 
 ## Langkah berikutnya
-1. Buat Pull Request feature/m1-fondasi → main
-2. Merge (setelah pemilik OK)
-3. Aktifkan GitHub Pages (Settings → Pages → source GitHub Actions)
-4. Tes URL: https://esahuda9900.github.io/WEB-SDLG/
+1. Aktifkan GitHub Pages: Settings → Pages → Source = **GitHub Actions**
+2. Tunggu workflow hijau di tab Actions
+3. Tes: https://esahuda9900.github.io/WEB-SDLG/
+4. Setelah lolos → tutup M1, lanjut M2 Login
 
 ## Commit stabil terakhir (untuk rollback)
-- d6f6e1a — fix(ci) npm install
-- 3115ce2 — feat(m1) scaffolding
-- 2b1237d — STATUS tutup M0
+- 9795c35 — M1 merge (squash)
