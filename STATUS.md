@@ -2,38 +2,36 @@
 Terakhir diperbarui: 2026-10-24 oleh agent
 
 ## Posisi sekarang
-- Milestone aktif: **M3 — Daftar klaim**
-- Yang sedang dikerjakan: Tabel klaim di branch `feature/m3-daftar-klaim`
+- Milestone aktif: **M3 — Daftar klaim** (deploy sukses, menunggu tes pemilik)
+- Yang sedang dikerjakan: Menunggu konfirmasi daftar klaim di production.
 
-## Catatan Estafet (update di setiap langkah, bukan hanya akhir sesi)
-- Sedang mengerjakan: M3 daftar klaim
+## Catatan Estafet
+- Sedang mengerjakan: M3 — tes daftar klaim
 - Sudah sampai mana:
-  - M2 login sudah di-merge & deploy
-  - Branch M3: tabel, filter status tampilan, cari PFR/SDLG/serial, paginasi 20, tab Arsip
-  - Detail klaim masih placeholder (M4)
-  - Belum PR/merge M3
-- File yang sedang diubah / branch: feature/m3-daftar-klaim
-- Langkah berikutnya: PR → merge → deploy → pemilik tes daftar
-- Keputusan yang belum final: (tidak ada)
-- Bug yang sedang dilacak: (belum)
+  - PR #3 di-merge (squash)
+  - Deploy Pages **sukses** (run #9)
+  - Tabel + filter + cari + paginasi + tab arsip live
+  - Detail masih placeholder (M4)
+- File / branch: main
+- Langkah berikutnya: Pemilik tes → OK → M4 detail klaim
 
 ## Sudah selesai dan dites pemilik
 - M1 fondasi + Pages
 
 ## Sudah dibuat, belum dites pemilik
-- M2 login (production)
-- M3 daftar klaim (branch)
+- M2 login
+- M3 daftar klaim di https://esahuda9900.github.io/WEB-SDLG/#/klaim
 
 ## Bug / masalah yang diketahui
 - (kosong)
 
 ## Keputusan penting
-- Mapping status DB → 5 status tampilan (docs/keputusan.md)
+- Mapping status DB → 5 status tampilan
 - esahuda9900@gmail.com = admin
 
 ## Langkah berikutnya
-1. PR M3 → merge → deploy
-2. Pemilik tes daftar klaim setelah login
+1. Pemilik tes daftar klaim
+2. Setelah OK → M4 Detail klaim
 
 ## Commit stabil terakhir
-- 249c72e — STATUS M2 menunggu tes
+- 3c35053 — M3 merge
