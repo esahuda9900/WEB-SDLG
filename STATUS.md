@@ -2,17 +2,17 @@
 Terakhir diperbarui: 2026-10-24 oleh agent
 
 ## Posisi sekarang
-- Milestone aktif: **M7 — Klaim baru**
-- Yang sedang dikerjakan: Form buat klaim di branch `feature/m7-klaim-baru`
+- Milestone aktif: **M7 — Klaim baru** (deploy sukses, menunggu tes pemilik)
+- Yang sedang dikerjakan: Menunggu tes buat klaim di production.
 
 ## Catatan Estafet
-- Sedang mengerjakan: M7
+- Sedang mengerjakan: M7 — tes
 - Sudah sampai mana:
-  - M6 Edit OK pemilik
-  - Halaman /klaim/baru, generate PFR, insert Draft
-  - Belum PR/merge
-- File / branch: feature/m7-klaim-baru
-- Langkah berikutnya: PR → merge → deploy → pemilik tes buat klaim
+  - PR #7 di-merge (squash)
+  - Deploy Pages **sukses** (run #17)
+  - Form klaim baru + generate PFR live
+- File / branch: main
+- Langkah berikutnya: Pemilik tes buat klaim → OK → M8 (arsip / export) sesuai prioritas
 
 ## Sudah selesai dan dites pemilik
 - M1 fondasi
@@ -20,11 +20,11 @@ Terakhir diperbarui: 2026-10-24 oleh agent
 - M6 edit data
 
 ## Sudah dibuat, belum dites pemilik
-- M2–M4, M7 (branch)
+- M2 login, M3 daftar, M4 detail, M7 klaim baru
 
 ## Langkah berikutnya
-1. PR M7 → merge → deploy
-2. Tes buat klaim baru
+1. Tes buat klaim baru
+2. Setelah OK → arsip klaim atau export daftar
 
 ## Commit stabil terakhir
-- 2ab66b4 — STATUS M6 menunggu tes
+- 7943c02 — M7 merge
