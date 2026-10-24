@@ -25,6 +25,7 @@ type ClaimRow = {
 type Tab = 'aktif' | 'arsip'
 
 const PAGE_SIZE = 20
+const EXPORT_LIMIT = 2000
 
 function formatDate(d: string | null) {
   if (!d) return '—'
@@ -39,6 +40,88 @@ function formatDate(d: string | null) {
   }
 }
 
+function csvEscape(v: string) {
+  if (/[",\n\r]/.test(v)) return `"${v.replace(/"/g, '""')}"`
+  return v
+}
+
+function buildClaimsQuery(
+  tab: Tab,
+  statusFilter: DisplayStatus | 'Semua',
+  searchApplied: string,
+) {
+  let q = supabase
+    .from('claims')
+    .select(
+      'id, claim_id, claim_status, model, serial_no, customer, sdlg_no, failure_date, dealer_claim_date, last_updated, archived_at',
+      { count: 'exact' },
+    )
+
+  if (tab === 'arsip') {
+    q = q.not('archived_at', 'is', null)
+  } else {
+    q = q.is('archived_at', null)
+    if (statusFilter !== 'Semua') {
+      const statuses = dbStatusesForDisplay(statusFilter)
+      if (statuses && statuses.length) {
+        q = q.in('claim_status', statuses)
+      }
+    }
+  }
+
+  const term = searchApplied.trim()
+  if (term) {
+    q = q.or(
+      `claim_id.ilike.%${term}%,sdlg_no.ilike.%${term}%,serial_no.ilike.%${term}%`,
+    )
+  }
+
+  return q.order('last_updated', { ascending: false, nullsFirst: false })
+}
+
+function downloadCsv(rows: ClaimRow[], tab: Tab) {
+  const headers = [
+    'No',
+    'No. PFR',
+    'Status tampilan',
+    'Status DB',
+    'Model',
+    'Serial',
+    'Customer',
+    'No. SDLG',
+    'Tgl gagal',
+    'Tgl klaim dealer',
+    'Terakhir update',
+    'Arsip',
+  ]
+  const lines = [headers.join(',')]
+  rows.forEach((r, i) => {
+    const display = toDisplayStatus(r.claim_status, r.archived_at)
+    const cells = [
+      String(i + 1),
+      r.claim_id,
+      display,
+      r.claim_status ?? '',
+      r.model ?? '',
+      r.serial_no ?? '',
+      r.customer ?? '',
+      r.sdlg_no ?? '',
+      r.failure_date ?? '',
+      r.dealer_claim_date ?? '',
+      r.last_updated ?? '',
+      r.archived_at ? 'ya' : 'tidak',
+    ].map((c) => csvEscape(String(c)))
+    lines.push(cells.join(','))
+  })
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `klaim-sdlg-${tab}-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function ClaimsListPage() {
   const [tab, setTab] = useState<Tab>('aktif')
   const [statusFilter, setStatusFilter] = useState<DisplayStatus | 'Semua'>('Semua')
@@ -49,40 +132,17 @@ export default function ClaimsListPage() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [exporting, setExporting] = useState(false)
+  const [exportMsg, setExportMsg] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
 
-    let q = supabase
-      .from('claims')
-      .select(
-        'id, claim_id, claim_status, model, serial_no, customer, sdlg_no, failure_date, dealer_claim_date, last_updated, archived_at',
-        { count: 'exact' },
-      )
-
-    if (tab === 'arsip') {
-      q = q.not('archived_at', 'is', null)
-    } else {
-      q = q.is('archived_at', null)
-      if (statusFilter !== 'Semua') {
-        const statuses = dbStatusesForDisplay(statusFilter)
-        if (statuses && statuses.length) {
-          q = q.in('claim_status', statuses)
-        }
-      }
-    }
-
-    const term = searchApplied.trim()
-    if (term) {
-      q = q.or(
-        `claim_id.ilike.%${term}%,sdlg_no.ilike.%${term}%,serial_no.ilike.%${term}%`,
-      )
-    }
-
-    q = q
-      .order('last_updated', { ascending: false, nullsFirst: false })
-      .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
+    const q = buildClaimsQuery(tab, statusFilter, searchApplied).range(
+      page * PAGE_SIZE,
+      page * PAGE_SIZE + PAGE_SIZE - 1,
+    )
 
     const { data, error: err, count } = await q
 
@@ -113,6 +173,40 @@ export default function ClaimsListPage() {
     setStatusFilter('Semua')
   }
 
+  async function exportCsv() {
+    setExporting(true)
+    setExportMsg(null)
+    setError(null)
+    try {
+      const { data, error: err } = await buildClaimsQuery(
+        tab,
+        statusFilter,
+        searchApplied,
+      ).range(0, EXPORT_LIMIT - 1)
+
+      if (err) {
+        setError(`Export gagal: ${err.message}`)
+        setExporting(false)
+        return
+      }
+      const list = (data as ClaimRow[]) ?? []
+      if (list.length === 0) {
+        setExportMsg('Tidak ada data untuk diexport.')
+        setExporting(false)
+        return
+      }
+      downloadCsv(list, tab)
+      setExportMsg(
+        list.length >= EXPORT_LIMIT
+          ? `CSV diunduh (maks. ${EXPORT_LIMIT} baris).`
+          : `CSV diunduh (${list.length} baris).`,
+      )
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Export gagal')
+    }
+    setExporting(false)
+  }
+
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const fromNo = total === 0 ? 0 : page * PAGE_SIZE + 1
   const toNo = Math.min((page + 1) * PAGE_SIZE, total)
@@ -122,11 +216,16 @@ export default function ClaimsListPage() {
       <div className="page-head" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '1rem' }}>
         <div>
           <h1>Daftar klaim</h1>
-          <p className="muted">Cari, filter, dan buka detail klaim warranty</p>
+          <p className="muted">Cari, filter, export, dan buka detail klaim warranty</p>
         </div>
-        <Link className="btn primary" to="/klaim/baru">
-          + Klaim baru
-        </Link>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <button type="button" className="btn" disabled={exporting || loading} onClick={() => void exportCsv()}>
+            {exporting ? 'Export…' : 'Export CSV'}
+          </button>
+          <Link className="btn primary" to="/klaim/baru">
+            + Klaim baru
+          </Link>
+        </div>
       </div>
 
       <div className="tabs">
@@ -175,6 +274,12 @@ export default function ClaimsListPage() {
           Cari
         </button>
       </form>
+
+      {exportMsg && (
+        <div className="alert alert-ok" role="status">
+          {exportMsg}
+        </div>
+      )}
 
       {error && (
         <div className="alert alert-error" role="alert">

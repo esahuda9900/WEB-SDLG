@@ -2,27 +2,27 @@
 Terakhir diperbarui: 2026-10-24 oleh agent
 
 ## Posisi sekarang
-- Milestone aktif: **M8 — Arsip klaim** (deploy sukses, menunggu tes pemilik)
-- Yang sedang dikerjakan: Menunggu tes arsip di production.
+- Milestone aktif: **M9 — Export CSV**
+- Yang sedang dikerjakan: Export di branch `feature/m9-export-csv`
 
 ## Catatan Estafet
-- Sedang mengerjakan: M8 — tes
+- Sedang mengerjakan: M9
 - Sudah sampai mana:
-  - PR #8 di-merge (squash)
-  - Deploy Pages **sukses** (run #19)
-  - Arsip / batalkan arsip live
-- File / branch: main
-- Langkah berikutnya: Pemilik tes arsip → OK → M9 export CSV (opsional) atau stabilisasi
+  - M8 Arsip OK pemilik
+  - Tombol Export CSV mengikuti filter/tab (maks 2000 baris)
+  - Belum PR/merge
+- File / branch: feature/m9-export-csv
+- Langkah berikutnya: PR → merge → deploy → pemilik tes export
 
 ## Sudah selesai dan dites pemilik
-- M1, M5, M6, M7
+- M1, M5, M6, M7, M8
 
 ## Sudah dibuat, belum dites pemilik
-- M2–M4, M8 arsip
+- M2–M4, M9 (branch)
 
 ## Langkah berikutnya
-1. Tes arsip pada klaim Draft uji coba
-2. Setelah OK → export daftar atau polish UX
+1. PR M9 → merge → deploy
+2. Tes Export CSV
 
 ## Commit stabil terakhir
-- 7a4ada0 — M8 merge
+- 7dab915 — STATUS M8 menunggu tes
