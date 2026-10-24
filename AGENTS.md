@@ -50,6 +50,7 @@ Boleh menyimpang hanya dengan alasan tertulis di docs/keputusan.md dan persetuju
 - React + Vite + TypeScript, Supabase JS client, router yang aman untuk GitHub Pages (HashRouter atau fallback 404), library tabel/data yang matang. Pilih yang paling stabil dan sederhana.
 - Deploy lewat GitHub Actions ke GitHub Pages. Set base path Vite sesuai nama repo.
 - Parsing PFR dan operasi admin sensitif: Supabase Edge Function.
+- Edge Function parse PFR yang aktif di Supabase bernama `gemini-parse-claim`; source mirror ada di `supabase/functions/gemini-parse-claim/`. Jangan membuat/menggunakan path `parse-pfr` sebagai nama fungsi deployed. Mirror repo tidak mengubah fungsi aktif sampai deploy manual.
 - Auth: Supabase Auth (email/password dulu). Role di tabel sendiri + RLS.
 - Styling: CSS modern sederhana (boleh Tailwind atau CSS Modules — pilih yang paling mudah maintain di paket gratis).
 - Tidak pakai framework berat atau layanan berbayar.
@@ -92,7 +93,7 @@ Status yang direncanakan (wajib dikonfirmasi di M0):
 - Arsip (terpisah dari daftar aktif)
 
 ## 12. Parsing PFR
-- Input: tempel teks PFR → Edge Function → Gemini → struktur JSON → pratinjau editable → simpan.
+- Input: tempel teks PFR → Edge Function `gemini-parse-claim` → struktur JSON → pratinjau editable → simpan. Catatan: source deployed v19 saat diperiksa 2026-10-24 belum memanggil Gemini API; lihat `docs/keputusan.md` dan `STATUS.md`.
 - Dipakai untuk klaim baru DAN update klaim yang sudah ada (match by nomor PFR).
 - Selalu sediakan jalur input manual kalau AI gagal.
 

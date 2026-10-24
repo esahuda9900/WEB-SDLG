@@ -60,3 +60,20 @@ React + Vite + TypeScript, base path `/WEB-SDLG/`, HashRouter, deploy GitHub Pag
 **Data asli PFR:** tidak boleh di-commit ke repo publik. Fixture test harus disamarkan.
 
 **Bukti selesai M5:** lulus test case di `docs/parse-test-cases.md` (case #1 minimal).
+
+
+---
+
+## 2026-10-24 — Mirror source Edge Function deployed v19
+
+**Path resmi untuk fungsi parse PFR:** `supabase/functions/gemini-parse-claim/`, mengikuti nama fungsi yang benar-benar aktif di Supabase. Dokumentasi lama menyebut `supabase/functions/parse-pfr`; itu tidak cocok dengan nama deployed. Source v19 disalin apa adanya ke repo agar dapat ditinjau dan diuji sebelum perubahan berikutnya. File mirror diberi header penanda dan **bukan berarti source repo otomatis ter-deploy**.
+
+**Sumber kebenaran Edge Function:** **A — manual deploy via Supabase CLI** untuk M5. Perubahan pada mirror GitHub tidak mengubah fungsi produksi sampai ada deploy manual yang disengaja. Jika kelak memilih deploy otomatis, buat workflow `.github/workflows/deploy-functions.yml` dan gunakan GitHub Secret `SUPABASE_ACCESS_TOKEN`; itu di luar scope sekarang. Workflow yang ada hanya deploy GitHub Pages pada push ke `main`, bukan Edge Function.
+
+**Temuan source v19 (2026-10-24):** source yang aktif tidak memanggil Gemini API. Input terstruktur mengembalikan `model: "source-parser-fast"`; jalur lain juga mengembalikan parser lokal beserta warning. Konstanta Gemini dan pembacaan nama environment variable tidak menghasilkan panggilan API. Ini berbeda dari dokumentasi M5 sebelumnya yang menyebut Gemini sebagai parser utama.
+
+**Keputusan arsitektur M5 — status pending validasi:** arah yang diusulkan adalah deterministic-primary + Gemini fallback, tetapi keputusan final menunggu tes minimal 5 kasus PFR tersamarkan dan evaluasi hasil per field. Jangan menghapus jalur `source-parser-fast` dalam mirror/produksi pada commit ini.
+
+**Tech debt / tes:** tidak ditemukan file test otomatis untuk Edge Function di repository saat mirror dibuat. Source v19 yang berjalan di production belum dilindungi oleh test khusus; commit berikutnya perlu menambahkan tes regresi bertahap sebelum memperbaiki parser. Jangan menggunakan PFR asli dalam fixture repo publik.
+
+**Batas commit mirror:** hanya menambahkan snapshot source v19 dan dokumentasi. Tidak melakukan refactor, perubahan database, perubahan secret, atau deploy ke Supabase.
