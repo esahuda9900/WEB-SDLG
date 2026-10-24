@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import {
@@ -75,7 +75,6 @@ export default function ClaimsListPage() {
 
     const term = searchApplied.trim()
     if (term) {
-      // Cari di nomor PFR, nomor SDLG, serial/VIN
       q = q.or(
         `claim_id.ilike.%${term}%,sdlg_no.ilike.%${term}%,serial_no.ilike.%${term}%`,
       )
@@ -102,7 +101,7 @@ export default function ClaimsListPage() {
     void load()
   }, [load])
 
-  function applySearch(e: React.FormEvent) {
+  function applySearch(e: FormEvent) {
     e.preventDefault()
     setPage(0)
     setSearchApplied(search)
