@@ -2,42 +2,47 @@
 Terakhir diperbarui: 2026-10-24 oleh agent
 
 ## Posisi sekarang
-- Milestone aktif: M0 — Pemetaan (laporan siap, menunggu OK pemilik)
-- Yang sedang dikerjakan: Selesai bootstrap + pemetaan Supabase. Belum coding aplikasi.
+- Milestone aktif: M0 selesai → menunggu OK untuk mulai M1
+- Yang sedang dikerjakan: Keputusan M0 sudah dicatat. Belum coding aplikasi.
 
 ## Catatan Estafet (update di setiap langkah, bukan hanya akhir sesi)
-- Sedang mengerjakan: M0 selesai, menunggu OK sebelum M1
+- Sedang mengerjakan: Menunggu OK pemilik untuk mulai M1 (Fondasi + backup darurat)
 - Sudah sampai mana:
-  - Repo WEB-SDLG di-bootstrap (AGENTS.md, STATUS.md, docs/)
-  - Struktur Supabase dipetakan (34 tabel public, claims 549 baris)
-  - Status klaim existing: Paid 313, SDLG Audit 228, Draft 5, Rejected 3
-  - claim_id unik, tidak ada null, archived_at masih kosong semua
-  - Batas gratis dicatat di docs/batas-gratis.md
-- File yang sedang diubah / branch: main (bootstrap saja; M1 akan pakai branch feature)
-- Langkah berikutnya: Tunggu OK pemilik atas laporan M0 + 5 pertanyaan, lalu mulai M1 (fondasi + backup darurat)
-- Keputusan yang belum final: lihat 5 pertanyaan di laporan M0
+  - M0 selesai: struktur Supabase dipetakan, keputusan pemilik dicatat di docs/keputusan.md
+  - Status tampilan web: Belum disubmit / Sudah disubmit / Diaudit SDLG / Ditolak / Arsip (mapping ke claim_status lama)
+  - Boleh baca-tulis tabel claims yang sama
+  - Boleh kirim teks PFR ke Gemini lewat Edge Function
+  - Hanya admin, public signup mati
+  - Nomor PFR = identitas; nomor urut list juga ditampilkan
+- File yang sedang diubah / branch: main (docs saja). M1 akan pakai branch `feature/m1-fondasi`
+- Langkah berikutnya: Setelah OK → buat branch M1, scaffolding Vite React TS, CI, Pages, desain backup darurat
+- Keputusan yang belum final: (sudah final dari M0)
 - Bug yang sedang dilacak: (belum)
 
 ## Sudah selesai dan dites pemilik
-- (kosong)
+- (kosong — M0 adalah pemetaan, belum ada UI)
 
 ## Sudah dibuat, belum dites pemilik
-- Bootstrap file di repo (AGENTS, STATUS, docs/)
+- Bootstrap docs + keputusan M0
 
 ## Bug / masalah yang diketahui
 - (kosong)
 
 ## Keputusan penting (detail di docs/keputusan.md)
-- (kosong — menunggu jawaban pemilik di M0)
+- Status tampilan 5 kategori + mapping ke claim_status existing
+- Baca-tulis claims yang sama (tanpa tabel baru)
+- Gemini parsing lewat Edge Function diizinkan
+- Hanya admin
 
 ## Hal baru yang dipelajari hari ini (dari penjelasan pemilik)
-- Repo baru: https://github.com/esahuda9900/WEB-SDLG
-- Vite base path: /WEB-SDLG/
+- Repo baru: https://github.com/esahuda9900/WEB-SDLG , base path /WEB-SDLG/
+- Jawaban M0: status final 5 kategori OK, 240 = PFR + nomor urut list, boleh R/W claims, boleh Gemini, hanya admin
 
 ## Langkah berikutnya
-1. Pemilik baca laporan M0 dan jawab 5 pertanyaan
-2. Setelah OK → M1 Fondasi + backup darurat
+1. Pemilik kasih OK untuk mulai M1
+2. M1: scaffolding + backup darurat + deploy kosong ke Pages
 
 ## Commit stabil terakhir (untuk rollback)
-- e231512 — docs: isi batas paket gratis
-- 2fc57c4 — chore: bootstrap project docs
+- bf2719a — docs: catat keputusan M0
+- 5ce594b — update STATUS M0
+- e231512 — batas-gratis
