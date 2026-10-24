@@ -2,29 +2,30 @@
 Terakhir diperbarui: 2026-10-24 oleh agent
 
 ## Posisi sekarang
-- Milestone aktif: **M5 — Ubah status klaim**
-- Yang sedang dikerjakan: Panel ubah status di branch `feature/m5-ubah-status`
+- Milestone aktif: **M5 — Ubah status klaim** (deploy sukses, menunggu tes pemilik)
+- Yang sedang dikerjakan: Menunggu tes ubah status di production.
 
 ## Catatan Estafet
-- Sedang mengerjakan: M5
+- Sedang mengerjakan: M5 — tes
 - Sudah sampai mana:
-  - Form ubah claim_status di detail (admin)
-  - Catatan/alasan; wajib jika Rejected
-  - Update status_date + last_updated
-  - Tidak ubah struktur DB
-  - Belum PR/merge
-- File / branch: feature/m5-ubah-status
-- Langkah berikutnya: PR → merge → deploy → pemilik tes pada klaim Draft
+  - PR #5 di-merge (squash)
+  - Deploy Pages **sukses** (run #13)
+  - Panel ubah status live di detail klaim
+- File / branch: main
+- Langkah berikutnya: Pemilik tes di klaim Draft → OK → M6 (input klaim baru / edit field) sesuai prioritas
 
 ## Sudah selesai dan dites pemilik
 - M1 fondasi
 
 ## Sudah dibuat, belum dites pemilik
-- M2–M5 (M5 di branch)
+- M2 login, M3 daftar, M4 detail, M5 ubah status
+
+## Bug / masalah yang diketahui
+- (kosong)
 
 ## Langkah berikutnya
-1. PR M5 → merge → deploy
-2. Tes ubah status (lebih aman di klaim Draft)
+1. Tes ubah status pada klaim Draft
+2. Setelah OK → lanjut input klaim baru atau edit field
 
 ## Commit stabil terakhir
-- adfb674 — STATUS M4 menunggu tes
+- 7134f04 — M5 merge
