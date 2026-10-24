@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { toDisplayStatus } from '../lib/claimStatus'
+import StatusChangePanel from '../components/StatusChangePanel'
 
 type ClaimDetail = {
   id: string
@@ -248,6 +249,30 @@ export default function ClaimDetailPage() {
           <strong>Alasan ditolak:</strong> {row.rejection_reason}
         </div>
       )}
+
+      <StatusChangePanel
+        claimUuid={row.id}
+        claimIdLabel={row.claim_id}
+        currentStatus={row.claim_status}
+        archivedAt={row.archived_at}
+        onUpdated={(next) => {
+          setRow((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  claim_status: next.claim_status,
+                  status_update_reason: next.status_update_reason,
+                  rejection_reason:
+                    next.claim_status === 'Rejected'
+                      ? next.rejection_reason
+                      : prev.rejection_reason,
+                  status_date: next.status_date,
+                  last_updated: next.last_updated,
+                }
+              : prev,
+          )
+        }}
+      />
 
       <Block title="Identitas & unit">
         <Field label="Model" value={row.model} />

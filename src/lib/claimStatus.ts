@@ -25,6 +25,24 @@ const DIAUDIT = new Set([
 
 const DITOLAK = new Set(['Rejected', 'On Hold'])
 
+/** Status DB yang boleh dipilih admin saat ubah status (urutan alur umum). */
+export const EDITABLE_DB_STATUSES = [
+  'Draft',
+  'Ready to Claim',
+  'Submitted to Warranty Admin',
+  'Submitted to SDLG',
+  'Claimed to SDLG',
+  'SDLG Audit',
+  'Approved',
+  'Billing',
+  'Paid',
+  'Completed',
+  'On Hold',
+  'Rejected',
+] as const
+
+export type EditableDbStatus = (typeof EDITABLE_DB_STATUSES)[number]
+
 export function toDisplayStatus(
   claimStatus: string | null | undefined,
   archivedAt: string | null | undefined,
@@ -35,11 +53,9 @@ export function toDisplayStatus(
   if (SUDAH.has(s)) return 'Sudah disubmit'
   if (DIAUDIT.has(s)) return 'Diaudit SDLG'
   if (DITOLAK.has(s)) return 'Ditolak'
-  // fallback: anggap belum disubmit
   return 'Belum disubmit'
 }
 
-/** Filter DB untuk tab status tampilan (tanpa Arsip). */
 export function dbStatusesForDisplay(display: DisplayStatus): string[] | null {
   switch (display) {
     case 'Belum disubmit':

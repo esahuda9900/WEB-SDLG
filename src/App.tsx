@@ -11,7 +11,7 @@ function Home() {
   return (
     <div className="page">
       <h1>Warranty Claim SDLG</h1>
-      <p className="muted">Milestone M4 — Detail klaim</p>
+      <p className="muted">Milestone M5 — Ubah status</p>
       <div className="card">
         <p>
           Masuk sebagai: <strong>{user?.email}</strong>
@@ -53,7 +53,7 @@ function Shell() {
           SDLG Warranty
         </Link>
         <nav className="nav">
-          <span className="badge">M4 · Detail</span>
+          <span className="badge">M5 · Status</span>
           {!loading && session && isAdmin && (
             <>
               <Link to="/klaim" className="nav-link">
