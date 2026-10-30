@@ -5,6 +5,7 @@ import { toDisplayStatus } from '../lib/claimStatus'
 import StatusChangePanel from '../components/StatusChangePanel'
 import ClaimEditForm, { type EditableClaimFields } from '../components/ClaimEditForm'
 import ArchivePanel from '../components/ArchivePanel'
+import CollapsibleSection from '../components/CollapsibleSection'
 
 type ClaimDetail = EditableClaimFields & {
   id: string
@@ -66,24 +67,6 @@ function Field({ label, value }: { label: string; value: ReactNode }) {
       <div className="detail-label">{label}</div>
       <div className="detail-value">{value ?? '—'}</div>
     </div>
-  )
-}
-
-function Block({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="card detail-block">
-      <h2 className="detail-block-title">{title}</h2>
-      <div className="detail-grid">{children}</div>
-    </section>
-  )
-}
-
-function TextBlock({ title, text }: { title: string; text: string | null }) {
-  return (
-    <section className="card detail-block">
-      <h2 className="detail-block-title">{title}</h2>
-      <p className="detail-text">{text?.trim() ? text : '—'}</p>
-    </section>
   )
 }
 
@@ -215,7 +198,14 @@ export default function ClaimDetailPage() {
         <div className="detail-header-actions">
           <span className={`status-pill status-${slug(display)}`}>{display}</span>
           {canEdit && !editing && (
-            <button type="button" className="btn" onClick={() => { setEditing(true); setSaveOk(null) }}>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => {
+                setEditing(true)
+                setSaveOk(null)
+              }}
+            >
               Edit data
             </button>
           )}
@@ -247,122 +237,204 @@ export default function ClaimDetailPage() {
         />
       ) : (
         <>
-          <StatusChangePanel
-            claimUuid={row.id}
-            claimIdLabel={row.claim_id}
-            currentStatus={row.claim_status}
-            archivedAt={row.archived_at}
-            onUpdated={(next) => {
-              setRow((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      claim_status: next.claim_status,
-                      status_update_reason: next.status_update_reason,
-                      rejection_reason:
-                        next.claim_status === 'Rejected'
-                          ? next.rejection_reason
-                          : prev.rejection_reason,
-                      status_date: next.status_date,
-                      last_updated: next.last_updated,
+          <div className="detail-layout">
+            <div className="detail-main">
+              <StatusChangePanel
+                claimUuid={row.id}
+                claimIdLabel={row.claim_id}
+                currentStatus={row.claim_status}
+                archivedAt={row.archived_at}
+                onUpdated={(next) => {
+                  setRow((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          claim_status: next.claim_status,
+                          status_update_reason: next.status_update_reason,
+                          rejection_reason:
+                            next.claim_status === 'Rejected'
+                              ? next.rejection_reason
+                              : prev.rejection_reason,
+                          status_date: next.status_date,
+                          last_updated: next.last_updated,
+                        }
+                      : prev,
+                  )
+                }}
+              />
+
+              <ArchivePanel
+                claimUuid={row.id}
+                claimIdLabel={row.claim_id}
+                archivedAt={row.archived_at}
+                onChanged={(next) => {
+                  setRow((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          archived_at: next.archived_at,
+                          last_updated: next.last_updated,
+                        }
+                      : prev,
+                  )
+                  setEditing(false)
+                }}
+              />
+
+              <section className="card detail-block">
+                <h2 className="detail-block-title">Identitas & unit</h2>
+                <div className="detail-grid">
+                  <Field label="Model" value={row.model} />
+                  <Field label="Serial" value={<span className="mono">{row.serial_no ?? '—'}</span>} />
+                  <Field
+                    label="Engine serial"
+                    value={<span className="mono">{row.engine_serial_no ?? '—'}</span>}
+                  />
+                  <Field label="Customer" value={row.customer} />
+                  <Field label="Cabang" value={row.branch} />
+                  <Field label="Dealer" value={row.dealer_name ?? row.distributor} />
+                  <Field label="No. SDLG" value={<span className="mono">{row.sdlg_no ?? '—'}</span>} />
+                  <Field label="No. klaim dealer" value={row.dealer_claim_no} />
+                  <Field label="WO / SO" value={row.dealer_wo_so} />
+                  <Field label="Tipe klaim" value={row.claim_type} />
+                </div>
+              </section>
+
+              <section className="card detail-block">
+                <h2 className="detail-block-title">Tanggal penting</h2>
+                <div className="detail-grid">
+                  <Field label="Tanggal jual" value={fmtDate(row.sales_date)} />
+                  <Field label="Tanggal gagal" value={fmtDate(row.failure_date)} />
+                  <Field label="Mulai perbaikan" value={fmtDate(row.dealer_repair_date)} />
+                  <Field label="Selesai perbaikan" value={fmtDate(row.completion_date)} />
+                  <Field label="Tanggal klaim dealer" value={fmtDate(row.dealer_claim_date)} />
+                  <Field label="Input" value={fmtDate(row.input_date)} />
+                  <Field label="Status date" value={fmtDate(row.status_date)} />
+                  <Field label="Audit SDLG" value={fmtDate(row.sdlg_audit_date)} />
+                  <Field label="Approval SDLG" value={fmtDate(row.sdlg_approval_date)} />
+                  <Field label="Billing" value={fmtDate(row.billing_date)} />
+                  <Field
+                    label="Invoice"
+                    value={
+                      row.invoice_no
+                        ? `${row.invoice_no} (${fmtDate(row.invoice_date)})`
+                        : fmtDate(row.invoice_date)
                     }
-                  : prev,
-              )
-            }}
-          />
-
-          <ArchivePanel
-            claimUuid={row.id}
-            claimIdLabel={row.claim_id}
-            archivedAt={row.archived_at}
-            onChanged={(next) => {
-              setRow((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      archived_at: next.archived_at,
-                      last_updated: next.last_updated,
+                  />
+                  <Field
+                    label="Pembayaran"
+                    value={
+                      row.payment_date
+                        ? `${fmtDate(row.payment_date)} · ${fmtMoney(row.payment_amount, row.currency)}`
+                        : '—'
                     }
-                  : prev,
-              )
-              setEditing(false)
-            }}
-          />
+                  />
+                </div>
+              </section>
+            </div>
 
-          <Block title="Identitas & unit">
-            <Field label="Model" value={row.model} />
-            <Field label="Serial" value={<span className="mono">{row.serial_no ?? '—'}</span>} />
-            <Field label="Engine serial" value={<span className="mono">{row.engine_serial_no ?? '—'}</span>} />
-            <Field label="Customer" value={row.customer} />
-            <Field label="Cabang" value={row.branch} />
-            <Field label="Dealer" value={row.dealer_name ?? row.distributor} />
-            <Field label="No. SDLG" value={<span className="mono">{row.sdlg_no ?? '—'}</span>} />
-            <Field label="No. klaim dealer" value={row.dealer_claim_no} />
-            <Field label="WO / SO" value={row.dealer_wo_so} />
-            <Field label="Tipe klaim" value={row.claim_type} />
-            <Field label="HM saat gagal" value={fmtNum(row.hm_failure)} />
-            <Field label="HM selesai" value={fmtNum(row.hm_completion)} />
-          </Block>
+            <aside className="detail-side">
+              <section className="card detail-block total-card">
+                <h2 className="detail-block-title">Total klaim</h2>
+                <p className="total-amount">{fmtMoney(row.total_amount, row.currency)}</p>
+                <div className="detail-grid side-grid">
+                  <Field label="Parts total" value={fmtMoney(row.parts_total, row.currency)} />
+                  <Field label="Labour" value={fmtMoney(row.labour_amount, row.currency)} />
+                  <Field label="Mileage" value={fmtMoney(row.mileage_amount, row.currency)} />
+                  <Field label="Other" value={fmtMoney(row.other_amount, row.currency)} />
+                </div>
+              </section>
 
-          <Block title="Tanggal penting">
-            <Field label="Tanggal jual" value={fmtDate(row.sales_date)} />
-            <Field label="Tanggal gagal" value={fmtDate(row.failure_date)} />
-            <Field label="Mulai perbaikan" value={fmtDate(row.dealer_repair_date)} />
-            <Field label="Selesai perbaikan" value={fmtDate(row.completion_date)} />
-            <Field label="Tanggal klaim dealer" value={fmtDate(row.dealer_claim_date)} />
-            <Field label="Input" value={fmtDate(row.input_date)} />
-            <Field label="Status date" value={fmtDate(row.status_date)} />
-            <Field label="Audit SDLG" value={fmtDate(row.sdlg_audit_date)} />
-            <Field label="Approval SDLG" value={fmtDate(row.sdlg_approval_date)} />
-            <Field label="Billing" value={fmtDate(row.billing_date)} />
-            <Field label="Invoice" value={row.invoice_no ? `${row.invoice_no} (${fmtDate(row.invoice_date)})` : fmtDate(row.invoice_date)} />
-            <Field label="Pembayaran" value={row.payment_date ? `${fmtDate(row.payment_date)} · ${fmtMoney(row.payment_amount, row.currency)}` : '—'} />
-          </Block>
+              <section className="card detail-block">
+                <h2 className="detail-block-title">Hour Meter</h2>
+                <div className="detail-grid side-grid">
+                  <Field label="HM saat gagal" value={fmtNum(row.hm_failure)} />
+                  <Field label="HM selesai" value={fmtNum(row.hm_completion)} />
+                </div>
+              </section>
 
-          <TextBlock title="Deskripsi kerusakan" text={row.fault_description} />
-          <TextBlock title="Analisis penyebab" text={row.cause_analyze} />
-          <TextBlock title="Metode perbaikan" text={row.repair_method} />
-          <TextBlock title="Komentar" text={row.comment} />
+              <section className="card detail-block">
+                <h2 className="detail-block-title">Ringkas unit</h2>
+                <div className="detail-grid side-grid">
+                  <Field label="Model" value={row.model} />
+                  <Field label="Serial" value={<span className="mono">{row.serial_no ?? '—'}</span>} />
+                  <Field label="Dealer" value={row.dealer_name ?? row.distributor} />
+                  <Field label="Cabang" value={row.branch} />
+                </div>
+              </section>
+            </aside>
+          </div>
 
-          <Block title="Part penyebab & kondisi">
-            <Field label="Part no" value={<span className="mono">{row.causing_part_no ?? '—'}</span>} />
-            <Field label="Deskripsi part" value={row.causing_part_desc} />
-            <Field label="Lokasi" value={row.failure_part_location} />
-            <Field label="Kondisi kerja" value={row.working_conditions} />
-            <Field label="Teknisi" value={row.technical_personnel} />
-            <Field label="Jumlah foto" value={row.photo_count != null ? String(row.photo_count) : '—'} />
-          </Block>
+          <CollapsibleSection id="fault" title="Deskripsi kerusakan & analisis" defaultOpen>
+            <div className="collapsible-inner">
+              <div className="text-block">
+                <h3 className="sub-title">Deskripsi kerusakan</h3>
+                <p className="detail-text">{row.fault_description?.trim() || '—'}</p>
+              </div>
+              <div className="text-block">
+                <h3 className="sub-title">Analisis penyebab</h3>
+                <p className="detail-text">{row.cause_analyze?.trim() || '—'}</p>
+              </div>
+              <div className="text-block">
+                <h3 className="sub-title">Komentar</h3>
+                <p className="detail-text">{row.comment?.trim() || '—'}</p>
+              </div>
+            </div>
+          </CollapsibleSection>
 
-          <Block title="Biaya">
-            <Field label="Labour (jam)" value={fmtNum(row.labour_hrs, 1)} />
-            <Field label="Labour rate" value={fmtMoney(row.labour_rate, row.currency)} />
-            <Field label="Labour amount" value={fmtMoney(row.labour_amount, row.currency)} />
-            <Field label="Mileage (km)" value={fmtNum(row.mileage_km)} />
-            <Field label="Mileage rate" value={fmtMoney(row.mileage_rate, row.currency)} />
-            <Field label="Mileage amount" value={fmtMoney(row.mileage_amount, row.currency)} />
-            <Field label="Other" value={fmtMoney(row.other_amount, row.currency)} />
-            <Field label="Parts total" value={fmtMoney(row.parts_total, row.currency)} />
-            <Field label="Total" value={<strong>{fmtMoney(row.total_amount, row.currency)}</strong>} />
-          </Block>
+          <CollapsibleSection id="parts" title="Parts & biaya detail" defaultOpen>
+            <div className="collapsible-inner">
+              <div className="detail-grid" style={{ marginBottom: '1rem' }}>
+                <Field label="Labour (jam)" value={fmtNum(row.labour_hrs, 1)} />
+                <Field label="Labour rate" value={fmtMoney(row.labour_rate, row.currency)} />
+                <Field label="Labour amount" value={fmtMoney(row.labour_amount, row.currency)} />
+                <Field label="Mileage (km)" value={fmtNum(row.mileage_km)} />
+                <Field label="Mileage rate" value={fmtMoney(row.mileage_rate, row.currency)} />
+                <Field label="Mileage amount" value={fmtMoney(row.mileage_amount, row.currency)} />
+                <Field label="Other" value={fmtMoney(row.other_amount, row.currency)} />
+                <Field label="Parts total" value={fmtMoney(row.parts_total, row.currency)} />
+                <Field
+                  label="Total"
+                  value={<strong>{fmtMoney(row.total_amount, row.currency)}</strong>}
+                />
+              </div>
+              <h3 className="sub-title">Daftar parts</h3>
+              <PartsTable parts={row.parts} />
+            </div>
+          </CollapsibleSection>
 
-          <section className="card detail-block">
-            <h2 className="detail-block-title">Parts</h2>
-            <PartsTable parts={row.parts} />
-          </section>
+          <CollapsibleSection id="repair" title="Metode perbaikan & teknisi" defaultOpen={false}>
+            <div className="collapsible-inner">
+              <div className="detail-grid">
+                <Field label="Part no penyebab" value={<span className="mono">{row.causing_part_no ?? '—'}</span>} />
+                <Field label="Deskripsi part" value={row.causing_part_desc} />
+                <Field label="Lokasi" value={row.failure_part_location} />
+                <Field label="Kondisi kerja" value={row.working_conditions} />
+                <Field label="Teknisi" value={row.technical_personnel} />
+                <Field label="Jumlah foto" value={row.photo_count != null ? String(row.photo_count) : '—'} />
+              </div>
+              <div className="text-block" style={{ marginTop: '1rem' }}>
+                <h3 className="sub-title">Metode perbaikan</h3>
+                <p className="detail-text">{row.repair_method?.trim() || '—'}</p>
+              </div>
+            </div>
+          </CollapsibleSection>
 
-          {(row.status_update_reason || row.sdlg_submission_no) && (
-            <Block title="Catatan status / SDLG">
-              <Field label="No. submission SDLG" value={row.sdlg_submission_no} />
-              <Field label="Alasan update status" value={row.status_update_reason} />
-            </Block>
-          )}
+          <CollapsibleSection id="status-note" title="Catatan status / SDLG" defaultOpen={false}>
+            <div className="collapsible-inner">
+              <div className="detail-grid">
+                <Field label="No. submission SDLG" value={row.sdlg_submission_no} />
+                <Field label="Alasan update status" value={row.status_update_reason} />
+              </div>
+            </div>
+          </CollapsibleSection>
+
+          <p className="muted small meta-footer">
+            Dibuat: {fmtDate(row.created_at)} · Diperbarui: {fmtDate(row.last_updated)}
+            {row.archived_at ? ` · Diarsipkan: ${fmtDate(row.archived_at)}` : ''}
+          </p>
         </>
       )}
-
-      <p className="muted small">
-        Dibuat: {fmtDate(row.created_at)} · Diperbarui: {fmtDate(row.last_updated)}
-        {row.archived_at ? ` · Diarsipkan: ${fmtDate(row.archived_at)}` : ''}
-      </p>
     </div>
   )
 }

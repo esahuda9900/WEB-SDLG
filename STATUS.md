@@ -1,21 +1,29 @@
 # STATUS.md — Kondisi project terkini
-Terakhir diperbarui: 2026-10-24 oleh agent
+Terakhir diperbarui: 2026-10-30 oleh agent
 
 ## Posisi sekarang
 - Milestone aktif: **M5 Parse PFR (Gemini + validator)** — belum mulai implementasi aturan baru
 - Parser regex lokal: **dihentikan sebagai solusi** (keputusan pemilik / diagnosis 2026-10-24)
+- **UI Detail Klaim**: layout diperbaiki (2 kolom + collapsible) — sudah di-merge ke main
 
 ## Catatan Estafet
-- Sedang mengerjakan: dokumentasi syarat lulus parse
+- Sedang mengerjakan: menunggu CI + deploy layout detail baru
 - Sudah sampai mana:
-  - UI Parse + simpan ke claims ada
-  - Percobaan regex gagal (label sebagai nilai, parts dobel, mileage salah)
-  - Aturan parse + test case #1 dicatat di docs/ (tanpa teks PFR asli)
+  - Komponen `CollapsibleSection` (localStorage + visual beda state)
+  - Layout 2 kolom (kiri utama, kanan total + ringkas)
+  - Section collapsible dengan default open/closed sesuai preferensi pemilik
+  - CSS dark theme diperbarui
+  - Langsung di-push ke main (sesuai permintaan pemilik)
 - File / branch: main
-- Langkah berikutnya: implement M5 sesuai docs/keputusan.md + lulus docs/parse-test-cases.md
+- Langkah berikutnya: CI selesai → deploy → minta pemilik tes
+- Keputusan yang belum final: tidak ada
+- Bug yang sedang dilacak: tidak ada
 
 ## Sudah selesai dan dites pemilik
 - M1, status, edit, klaim baru, arsip
+
+## Sudah dibuat, belum dites pemilik
+- Layout detail klaim baru (2 kolom + collapsible) — 2026-10-30
 
 ## Belum selesai / belum lulus
 - Parse PFR akurat (M5)
@@ -23,8 +31,14 @@ Terakhir diperbarui: 2026-10-24 oleh agent
 - Helper copas, cek warranty, Admin Center
 
 ## Hal baru yang dipelajari hari ini
-- Jangan lanjutkan regex label-based; M5 = Gemini + validator + test case ketat
-- Data PFR asli tidak masuk repo publik
+- Preferensi pemilik: collapsible > tab untuk data admin; total harus menonjol; jangan tiru layout padat sistem referensi
+- Pemilik minta langsung push ke main tanpa lewat PR form
 
-## Commit stabil terakhir
+## Langkah berikutnya
+1. Tunggu CI + deploy GitHub Pages
+2. Minta pemilik tes halaman detail klaim
+3. Lanjut M5 Parse PFR (Gemini)
+
+## Commit stabil terakhir (untuk rollback)
+- 51efe00f — sebelum layout detail baru
 - fa895812 — fix build parse (sebelum keputusan hentikan regex)
