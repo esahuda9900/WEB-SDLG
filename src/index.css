@@ -1,6 +1,7 @@
 :root {
   --bg: #0f1419;
   --surface: #1a2332;
+  --surface-2: #151d2a;
   --border: #2d3a4f;
   --text: #e8eef7;
   --muted: #8b9cb3;
@@ -92,7 +93,7 @@ main { max-width: 720px; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.25rem 1.4rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 .card p { margin: 0 0 0.75rem; }
 .card p:last-child { margin-bottom: 0; }
@@ -242,6 +243,7 @@ main { max-width: 720px; }
   gap: 0.75rem;
 }
 
+/* ===== DETAIL PAGE ===== */
 .detail-header {
   display: flex;
   flex-wrap: wrap;
@@ -258,7 +260,7 @@ main { max-width: 720px; }
 }
 .detail-block-title {
   margin: 0 0 1rem;
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: var(--muted);
   font-weight: 600;
   text-transform: uppercase;
@@ -266,7 +268,7 @@ main { max-width: 720px; }
 }
 .detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 0.85rem 1.25rem;
 }
 .detail-field { min-width: 0; }
@@ -283,6 +285,104 @@ main { max-width: 720px; }
   margin: 0;
   white-space: pre-wrap;
   line-height: 1.55;
+}
+
+/* 2-column layout */
+.detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 1.25rem;
+  align-items: start;
+  margin-bottom: 0.5rem;
+}
+@media (max-width: 900px) {
+  .detail-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.detail-main { min-width: 0; }
+.detail-side { min-width: 0; }
+.detail-side .card { margin-bottom: 1rem; }
+
+.total-card {
+  background: linear-gradient(145deg, #1a2332 0%, #152033 100%);
+  border-color: #3b82f655;
+}
+.total-amount {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 1rem !important;
+  color: #93c5fd;
+  letter-spacing: -0.02em;
+}
+.side-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem 0.85rem;
+}
+
+/* Collapsible */
+.collapsible {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 0.85rem;
+  overflow: hidden;
+}
+.collapsible.is-closed {
+  background: var(--surface-2);
+}
+.collapsible.is-open {
+  background: var(--surface);
+}
+.collapsible-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.15rem;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+.collapsible-header:hover {
+  background: rgba(59, 130, 246, 0.08);
+}
+.collapsible-title {
+  letter-spacing: 0.01em;
+}
+.collapsible-icon {
+  color: var(--muted);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.collapsible-body {
+  padding: 0 1.15rem 1.15rem;
+  border-top: 1px solid var(--border);
+}
+.collapsible-inner {
+  padding-top: 1rem;
+}
+.sub-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.text-block {
+  margin-bottom: 1rem;
+}
+.text-block:last-child {
+  margin-bottom: 0;
+}
+.meta-footer {
+  margin-top: 1.5rem;
 }
 
 .status-form {
